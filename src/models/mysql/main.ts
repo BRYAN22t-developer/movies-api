@@ -1,4 +1,4 @@
-import type { Pool } from "mysql2/promise";
+import type { Pool, RowDataPacket } from "mysql2/promise";
 import mysql2 from "mysql2/promise";
 
 const DEFAULT_DB_CONFIG = {
@@ -59,9 +59,54 @@ export class MySQLModel {
         return movies;
     }
 
-    async getMovieById({id}: {id: number}) {
+    async getMovieById({ id }: { id: number }) {
         const query = this.getMoviesQuery + " WHERE m.id = ? GROUP BY m.id;";
         const [movie] = await this.pool.query(query, [id]);
         return movie;
+    }
+
+    async createMovie({ title, description, poster_url, duration_minutes, genres }: { title: string, description: string, poster_url: string, duration_minutes: number, genres: string[] }) {
+        const query = `
+            INSERT INTO movies (title, description, poster_url, duration_minutes)
+            VALUES (?, ?, ?, ?);
+        `
+
+        const [result] = await this.pool.query(query, [title, description, poster_url, duration_minutes]);
+        const movieId = (result as any).insertId;
+
+        const genresPlaceholder = genres.map(() => "?").join(", ");
+
+        const [genreRows] = await this.pool.query<RowDataPacket[]>(
+            `
+                SELECT id 
+                FROM genres 
+                WHERE genre IN (${genresPlaceholder}) 
+            `,
+            genres
+        )
+
+        const values = genreRows.map((row) => [movieId, row.id])
+
+        if (values.length > 0) {
+            await this.pool.query(
+                `
+                    INSERT INTO movies_genres (movie_id, genre_id)
+                    VALUES ?
+                `,
+                [values]
+            );
+        }
+
+        const movie = await this.getMovieById({ id: movieId })
+        return movie;
+    }
+
+    async getGenres() {
+        const query = "SELECT genre FROM genres";
+        const [genres] = await this.pool.query<RowDataPacket[]>(query)
+
+        const genresParsed = genres.map((genre) => genre.genre)
+
+        return genresParsed;
     }
 }

@@ -10,9 +10,17 @@ export function createMoviesRouter(): Router {
         moviesController.getMovies(req, res);
     });
 
+    router.get("/genres", (req, res) => {
+        moviesController.getGenres(req, res)
+    })
+
     router.get("/:id", (req, res) => {
         moviesController.getMovieById(req, res);
     });
+
+    router.post("/", (req, res) => {
+        moviesController.createMovie(req, res)
+    })
 
     return router;
 }
