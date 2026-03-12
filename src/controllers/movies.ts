@@ -13,4 +13,13 @@ export class MoviesController {
         const movies = await this.model.getMovies({ genre: genre as string, search: search as string });
         res.json(movies);
     }
+
+    async getMovieById(req: Request, res: Response) {
+        const { id } = req.params;
+        const parsedId = Number(id);
+        const movie = await this.model.getMovieById({ id: parsedId });
+        res.json(movie);
+    }
+
+
 }

@@ -10,13 +10,7 @@ const DEFAULT_DB_CONFIG = {
 
 export class MySQLModel {
     private pool: Pool;
-
-    constructor() {
-        this.pool = mysql2.createPool(DEFAULT_DB_CONFIG);
-    }
-
-    async getMovies({ genre, search }: { genre?: string, search?: string }) {
-        let query = `
+    private getMoviesQuery = `
             SELECT 
                 m.title, 
                 m.description, 
@@ -29,6 +23,14 @@ export class MySQLModel {
             JOIN movies_genres mg ON mg.movie_id = m.id
             JOIN genres g ON g.id = mg.genre_id
         `
+
+    constructor() {
+        this.pool = mysql2.createPool(DEFAULT_DB_CONFIG);
+    }
+
+    async getMovies({ genre, search }: { genre?: string, search?: string }) {
+        let query = this.getMoviesQuery;
+
         const complement = "GROUP BY m.id;"
 
         const params: (string | number)[] = [];
@@ -57,4 +59,9 @@ export class MySQLModel {
         return movies;
     }
 
+    async getMovieById({id}: {id: number}) {
+        const query = this.getMoviesQuery + " WHERE m.id = ? GROUP BY m.id;";
+        const [movie] = await this.pool.query(query, [id]);
+        return movie;
+    }
 }
