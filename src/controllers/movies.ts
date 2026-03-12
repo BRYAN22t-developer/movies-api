@@ -1,17 +1,16 @@
 import type { Request, Response } from "express";
+import type { MySQLModel } from "../models/mysql/main.js";
 
-//TODO: REEMPLACE FOR DEPENDENCY INJECTION
-import { MySQLModel } from "../models/mysql.js";
-
-export class MoviesController{
-    //TODO: MAKE TYPE FOR BASE MODEL
-    private model: any;
-    constructor() {
-        this.model = new MySQLModel();
+export class MoviesController {
+    private readonly model: MySQLModel;
+    constructor(model: MySQLModel) {
+        this.model = model;
     }
 
     async getMovies(req: Request, res: Response) {
-        const movies = await this.model.getMovies();
+        const { genre, search } = req.query;
+
+        const movies = await this.model.getMovies({ genre: genre as string, search: search as string });
         res.json(movies);
     }
 }
