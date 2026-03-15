@@ -45,8 +45,12 @@ export function createMoviesRouter(): Router {
     });
 
     router.delete("/genres/:id", (req, res) => {
-        moviesController.removeGenre(req, res)
+        moviesController.deleteGenre(req, res)
     })
+
+    router.patch("/:id", (req, res) => {
+        moviesController.updateMovie(req, res);
+    });
 
     //#endregion
 

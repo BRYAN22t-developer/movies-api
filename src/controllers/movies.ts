@@ -13,9 +13,9 @@ export class MoviesController {
     //#region Movies and genres
 
     async getMovies(req: Request, res: Response) {
-        const { genre, search } = req.query;
-
-        const movies = await this.model.getMovies({ genre: genre as string, search: search as string });
+        const { genre, search, limit, offset } = req.query;
+        
+        const movies = await this.model.getMovies({ genre: genre as string, search: search as string, limit: Number(limit), offset: Number(offset) });
         res.json(movies);
     }
 
@@ -35,7 +35,7 @@ export class MoviesController {
         const result = await this.movieSchema.validateMovie(req.body);
 
         if (!result.success) {
-            res.status(400).json({ message: "Invalid job data", errors: result.error })
+            res.status(400).json({ message: "Invalid movie data", errors: result.error })
         }
 
         const newMovie = await this.model.createMovie({ ...req.body })
@@ -47,36 +47,49 @@ export class MoviesController {
         res.json(newGenre)
     }
 
-    async removeGenre(req: Request, res: Response) {
+    async deleteGenre(req: Request, res: Response) {
         const { id } = req.params;
         const parsedId = Number(id)
         const response = await this.model.removeGenre({ id: parsedId })
         res.sendStatus(204)
     }
 
-    async deleteMovie(req: Request, res: Response){
-        const {id} = req.params
+    async deleteMovie(req: Request, res: Response) {
+        const { id } = req.params
         const parsedId = Number(id)
-        const result = await this.model.deleteMovie({id: parsedId})
+        const result = await this.model.deleteMovie({ id: parsedId })
         res.sendStatus(204)
+    }
+
+    async updateMovie(req: Request, res: Response) {
+        const result = await this.movieSchema.validatePartialMovie(req.body)
+        if (!result.success) {
+            res.status(400).json({ message: "invalid movie data", error: result.error })
+        }
+
+        const { id } = req.params
+        const parsedId = Number(id)
+
+        const updatedMovie = await this.model.updateMovie({ ...req.body, id: parsedId })
+        res.json(updatedMovie)
     }
 
     //#endregion
 
-    async getScheduleStates(req: Request, res: Response){
+    async getScheduleStates(req: Request, res: Response) {
         const states = await this.model.getScheduleStates()
         res.json(states)
     }
 
-    async createScheduleState(req: Request, res: Response){
-        const state = await this.model.createScheduleState({...req.body})
+    async createScheduleState(req: Request, res: Response) {
+        const state = await this.model.createScheduleState({ ...req.body })
         res.json(state)
     }
 
-    async deleteScheduleState(req: Request, res: Response){
-        const {id} = req.params
+    async deleteScheduleState(req: Request, res: Response) {
+        const { id } = req.params
         const parsedId = Number(id)
-        const result = await this.model.deleteScheduleState({id: parsedId})
+        const result = await this.model.deleteScheduleState({ id: parsedId })
         res.sendStatus(204)
     }
 }

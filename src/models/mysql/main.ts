@@ -30,10 +30,10 @@ export class MySQLModel {
 
     //#region movies and genres
 
-    async getMovies({ genre, search }: { genre?: string, search?: string }) {
+    async getMovies({ genre, search, limit, offset }: { genre?: string, search?: string, limit?: number, offset?: number }) {
         let query = this.getMoviesQuery;
 
-        const complement = "GROUP BY m.id;"
+        const complement: string[] = ["GROUP BY m.id"]
 
         const params: (string | number)[] = [];
         const whereClauses: string[] = [];
@@ -54,8 +54,18 @@ export class MySQLModel {
             params.push(`%${search}%`, `%${search}%`);
         }
 
+        if(limit){
+            complement.push("LIMIT ?")
+            params.push(limit)
+        }
+
+        if(offset){
+            complement.push("OFFSET ?")
+            params.push(offset)
+        }
+
         query += whereClauses.length > 0 ? " WHERE " + whereClauses.join(" AND ") : "";
-        query += complement;
+        query += complement.join(" ");
         const [movies] = await this.pool.query(query, params);
 
         return movies;
@@ -172,6 +182,79 @@ export class MySQLModel {
         const query = "DELETE FROM genres WHERE id = ?"
         await this.pool.query(query, [id])
         return { "message": "genre deleted succesfully" }
+    }
+
+    async updateMovie({ id, title, description, poster_url, duration_minutes, genres }: { id: number, title?: string, description?: string, poster_url?: string, duration_minutes?: number, genres?: string[] }) {
+        const fields: string[] = []
+        const values: (string | number)[] = []
+
+        if (title) {
+            fields.push("title = ?")
+            values.push(title)
+        }
+
+        if (description) {
+            fields.push("description = ?")
+            values.push(description)
+        }
+
+        if (poster_url) {
+            fields.push("poster_url = ?")
+            values.push(poster_url)
+        }
+
+        if (duration_minutes !== undefined) {
+            fields.push("duration_minutes = ?")
+            values.push(duration_minutes)
+        }
+
+        
+
+        const assignGenres = async (movieId: number, genres: string[]) => {
+            await this.pool.query("DELETE FROM movies_genres WHERE movie_id = ?", [movieId])
+            const genresPlaceholder = genres.map(() => "?").join(", ")
+            const [genreRows] = await this.pool.query<RowDataPacket[]>(
+                `
+                SELECT id 
+                FROM genres 
+                WHERE genre IN (${genresPlaceholder}) 
+            `,
+                genres
+            )
+
+            const values = genreRows.map((row) => [movieId, row.id])
+
+            if (values.length > 0) {
+                await this.pool.query(
+                    `
+                    INSERT INTO movies_genres (movie_id, genre_id)
+                    VALUES ?
+                `,
+                    [values]
+                );
+            }
+
+        }
+
+        if(genres){
+            assignGenres(id, genres)
+        }
+
+        if (fields.length === 0) {
+            return genres !== undefined
+        }
+
+        values.push(id)
+
+        const query = `
+            UPDATE movies 
+            SET ${fields.join(", ")} 
+            WHERE id = ?
+        `
+        await this.pool.query(query, values)
+
+        const updatedMovie = await this.getMovieById({ id })
+        return updatedMovie
     }
 
     //#endregion
