@@ -28,6 +28,8 @@ export class MySQLModel {
         this.pool = mysql2.createPool(DEFAULT_DB_CONFIG);
     }
 
+    //#region movies and genres
+
     async getMovies({ genre, search }: { genre?: string, search?: string }) {
         let query = this.getMoviesQuery;
 
@@ -164,5 +166,14 @@ export class MySQLModel {
         const query = "DELETE FROM genres WHERE id = ?"
         await this.pool.query(query, [id])
         return { "message": "genre deleted succesfully" }
+    }
+
+    //#endregion
+
+    async getScheduleStates(){
+        const query = "SELECT state FROM schedules_states"
+        const [states] = await this.pool.query<RowDataPacket[]>(query)
+        const parsedStates = states.map((state) => state.state)
+        return parsedStates
     }
 }

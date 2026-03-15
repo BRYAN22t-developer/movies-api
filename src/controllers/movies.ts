@@ -10,6 +10,8 @@ export class MoviesController {
         this.movieSchema = new MovieSchema(this.model.getGenres.bind(this.model));
     }
 
+    //#region Movies and genres
+
     async getMovies(req: Request, res: Response) {
         const { genre, search } = req.query;
 
@@ -52,4 +54,10 @@ export class MoviesController {
         res.status(204)
     }
 
+    //#endregion
+
+    async getScheduleStates(req: Request, res: Response){
+        const states = await this.model.getScheduleStates()
+        res.json(states)
+    }
 }
