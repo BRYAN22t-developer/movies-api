@@ -14,6 +14,10 @@ export function createMoviesRouter(): Router {
         moviesController.createScheduleState(req, res)
     })
 
+    router.delete("/schedules/:id", (req, res) => {
+        moviesController.deleteScheduleState(req, res)
+    })
+
     //#region movies genres
 
     router.get("/", (req, res) => {

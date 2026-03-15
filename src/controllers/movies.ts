@@ -51,7 +51,7 @@ export class MoviesController {
         const { id } = req.params;
         const parsedId = Number(id)
         const response = await this.model.removeGenre({ id: parsedId })
-        res.status(204)
+        res.sendStatus(204)
     }
 
     //#endregion
@@ -66,5 +66,10 @@ export class MoviesController {
         res.json(state)
     }
 
-    
+    async deleteScheduleState(req: Request, res: Response){
+        const {id} = req.params
+        const parsedId = Number(id)
+        const result = await this.model.deleteScheduleState({id: parsedId})
+        res.sendStatus(204)
+    }
 }

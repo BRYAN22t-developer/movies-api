@@ -185,4 +185,10 @@ export class MySQLModel {
         const [result] = await this.pool.query("SELECT state FROM schedules_states WHERE id = ?", [newStateId])
         return result
     }
+
+    async deleteScheduleState({id}: {id: number}){
+        const query = "DELETE FROM schedules_states WHERE id = ?"
+        const [result] = await this.pool.query(query, [id])
+        return result
+    }
 }
