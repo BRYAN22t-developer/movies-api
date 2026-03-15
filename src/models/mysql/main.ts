@@ -109,4 +109,18 @@ export class MySQLModel {
 
         return genresParsed;
     }
+
+    async createGenre({ genre }: { genre: string }) {
+        const query = "INSERT INTO genres (genre) VALUES (?)";
+        const [newGenre] = await this.pool.query(query, [genre])
+        const newGenreId = (newGenre as any).insertId
+        const [result] = await this.pool.query("SELECT genre FROM genres WHERE id = ?", [newGenreId])
+        return result
+    }
+
+    async removeGenre({ id }: { id: number }) {
+        const query = "DELETE FROM genres WHERE id = ?"
+        await this.pool.query(query, [id])
+        return { "message": "genre deleted succesfully" }
+    }
 }

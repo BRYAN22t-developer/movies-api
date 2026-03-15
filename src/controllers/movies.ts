@@ -40,4 +40,16 @@ export class MoviesController {
         res.json(newMovie)
     }
 
+    async createGenre(req: Request, res: Response) {
+        const newGenre = await this.model.createGenre({ ...req.body })
+        res.json(newGenre)
+    }
+
+    async removeGenre(req: Request, res: Response) {
+        const { id } = req.params;
+        const parsedId = Number(id)
+        const response = await this.model.removeGenre({ id: parsedId })
+        res.status(204)
+    }
+
 }
