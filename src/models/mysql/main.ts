@@ -176,4 +176,13 @@ export class MySQLModel {
         const parsedStates = states.map((state) => state.state)
         return parsedStates
     }
+
+    async createScheduleState({state}: {state: string}){
+        const query = "INSERT INTO schedules_states (state) VALUES (?)"
+        const [newState] = await this.pool.query(query, [state])
+
+        const newStateId = (newState as any).insertId
+        const [result] = await this.pool.query("SELECT state FROM schedules_states WHERE id = ?", [newStateId])
+        return result
+    }
 }

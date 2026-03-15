@@ -60,4 +60,11 @@ export class MoviesController {
         const states = await this.model.getScheduleStates()
         res.json(states)
     }
+
+    async createScheduleState(req: Request, res: Response){
+        const state = await this.model.createScheduleState({...req.body})
+        res.json(state)
+    }
+
+    
 }

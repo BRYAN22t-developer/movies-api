@@ -10,6 +10,10 @@ export function createMoviesRouter(): Router {
         moviesController.getScheduleStates(req, res)
     })
 
+    router.post("/schedules", (req, res) => {
+        moviesController.createScheduleState(req, res)
+    })
+
     //#region movies genres
 
     router.get("/", (req, res) => {
