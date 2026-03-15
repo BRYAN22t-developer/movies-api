@@ -92,4 +92,11 @@ export class MoviesController {
         const result = await this.model.deleteScheduleState({ id: parsedId })
         res.sendStatus(204)
     }
+
+    async updateScheduleState(req: Request, res: Response){
+        const { id } = req.params
+        const parsedId = Number(id)
+        const result = await this.model.updateScheduleState({ id: parsedId, ...req.body })
+        res.json(result)
+    }
 }

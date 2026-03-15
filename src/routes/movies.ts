@@ -6,16 +6,20 @@ export function createMoviesRouter(): Router {
     const router = Router();
     const moviesController = new MoviesController(new MySQLModel());
 
-    router.get("/schedules", (req, res) => {
+    router.get("/schedules/states", (req, res) => {
         moviesController.getScheduleStates(req, res)
     })
 
-    router.post("/schedules", (req, res) => {
+    router.post("/schedules/states", (req, res) => {
         moviesController.createScheduleState(req, res)
     })
 
-    router.delete("/schedules/:id", (req, res) => {
+    router.delete("/schedules/states/:id", (req, res) => {
         moviesController.deleteScheduleState(req, res)
+    })
+
+    router.patch("/schedules/states/:id", (req, res) => {
+        moviesController.updateScheduleState(req, res)
     })
 
     //#region movies genres

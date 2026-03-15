@@ -280,4 +280,11 @@ export class MySQLModel {
         const [result] = await this.pool.query(query, [id])
         return result
     }
+
+    async updateScheduleState({id, state}: {id: number, state: string}){
+        const query = "UPDATE schedules_states SET state = ? WHERE id = ?"
+        await this.pool.query(query, [state, id])
+        const [result] = await this.pool.query("SELECT state FROM schedules_states WHERE id = ?", [id])
+        return result
+    }
 }
