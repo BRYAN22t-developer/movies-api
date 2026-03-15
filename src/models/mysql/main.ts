@@ -66,6 +66,27 @@ export class MySQLModel {
     }
 
     async createMovie({ title, description, poster_url, duration_minutes, genres }: { title: string, description: string, poster_url: string, duration_minutes: number, genres: string[] }) {
+        const titleAlreadyExists = async () => {
+            const query = "SELECT 1 FROM movies WHERE lower(title) = lower(?)"
+            const [result] = await this.pool.query(query, [title])
+            return (result as any)[0] !== undefined
+        }
+
+        const genresExists = async () => {
+            const placeholder = genres.map(() => "?").join(",")
+            const query = `SELECT genre FROM genres WHERE genre IN ${placeholder}`
+            const [result] = await this.pool.query(query, [genres])
+            return (result as any).length === genres.length
+        }
+
+        if (!await genresExists()){
+            return {"error": "genres do not match those in the database"}
+        }
+
+        if (await titleAlreadyExists()) {
+            return { "error": "title already exists" }
+        }
+
         const query = `
             INSERT INTO movies (title, description, poster_url, duration_minutes)
             VALUES (?, ?, ?, ?);
@@ -111,10 +132,31 @@ export class MySQLModel {
     }
 
     async createGenre({ genre }: { genre: string }) {
+        const genreAlreadyExists = async () => {
+            const query = "SELECT 1 FROM genres WHERE lower(genre) = lower(?)"
+            const [result] = await this.pool.query(query, [genre])
+            return (result as any)[0] !== undefined
+        }
+
+        if (await genreAlreadyExists()) {
+            return { "error": "genre already exists" }
+        }
+
         const query = "INSERT INTO genres (genre) VALUES (?)";
-        const [newGenre] = await this.pool.query(query, [genre])
+
+        let newGenre;
+
+        try {
+            const [result] = await this.pool.query(query, [genre])
+            newGenre = result;
+        } catch (e) {
+            return { "error": e }
+        }
+
         const newGenreId = (newGenre as any).insertId
         const [result] = await this.pool.query("SELECT genre FROM genres WHERE id = ?", [newGenreId])
+
+
         return result
     }
 
