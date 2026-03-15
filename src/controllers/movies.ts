@@ -54,6 +54,13 @@ export class MoviesController {
         res.sendStatus(204)
     }
 
+    async deleteMovie(req: Request, res: Response){
+        const {id} = req.params
+        const parsedId = Number(id)
+        const result = await this.model.deleteMovie({id: parsedId})
+        res.sendStatus(204)
+    }
+
     //#endregion
 
     async getScheduleStates(req: Request, res: Response){

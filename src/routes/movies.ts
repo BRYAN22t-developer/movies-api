@@ -40,6 +40,10 @@ export function createMoviesRouter(): Router {
         moviesController.getMovieById(req, res);
     });
 
+    router.delete("/:id", (req, res) => {
+        moviesController.deleteMovie(req, res);
+    });
+
     router.delete("/genres/:id", (req, res) => {
         moviesController.removeGenre(req, res)
     })

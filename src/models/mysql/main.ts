@@ -75,14 +75,14 @@ export class MySQLModel {
         }
 
         const genresExists = async () => {
-            const placeholder = genres.map(() => "?").join(",")
-            const query = `SELECT genre FROM genres WHERE genre IN ${placeholder}`
-            const [result] = await this.pool.query(query, [genres])
+            const placeholder = genres.map(() => "?").join(", ")
+            const query = `SELECT genre FROM genres WHERE genre IN (${placeholder})`
+            const [result] = await this.pool.query(query, genres)
             return (result as any).length === genres.length
         }
 
-        if (!await genresExists()){
-            return {"error": "genres do not match those in the database"}
+        if (!await genresExists()) {
+            return { "error": "genres do not match those in the database" }
         }
 
         if (await titleAlreadyExists()) {
@@ -122,6 +122,12 @@ export class MySQLModel {
 
         const movie = await this.getMovieById({ id: movieId })
         return movie;
+    }
+
+    async deleteMovie({ id }: { id: number }) {
+        const query = "DELETE FROM movies where id = ?"
+        const [result] = await this.pool.query(query, [id])
+        return result
     }
 
     async getGenres() {
@@ -170,14 +176,14 @@ export class MySQLModel {
 
     //#endregion
 
-    async getScheduleStates(){
+    async getScheduleStates() {
         const query = "SELECT state FROM schedules_states"
         const [states] = await this.pool.query<RowDataPacket[]>(query)
         const parsedStates = states.map((state) => state.state)
         return parsedStates
     }
 
-    async createScheduleState({state}: {state: string}){
+    async createScheduleState({ state }: { state: string }) {
         const query = "INSERT INTO schedules_states (state) VALUES (?)"
         const [newState] = await this.pool.query(query, [state])
 
@@ -186,7 +192,7 @@ export class MySQLModel {
         return result
     }
 
-    async deleteScheduleState({id}: {id: number}){
+    async deleteScheduleState({ id }: { id: number }) {
         const query = "DELETE FROM schedules_states WHERE id = ?"
         const [result] = await this.pool.query(query, [id])
         return result
