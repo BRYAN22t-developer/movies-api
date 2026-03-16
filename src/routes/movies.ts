@@ -34,6 +34,10 @@ export function createMoviesRouter(): Router {
         moviesController.createSchedule(req, res)
     })
 
+    router.patch("/schedules/:id", (req, res) => {
+        moviesController.updateSchedule(req, res)
+    })
+
     //#region movies genres
 
     router.get("/", (req, res) => {

@@ -368,7 +368,48 @@ export class MySQLModel {
         return result
     }
 
-    async updateSchedule({ id, movieId, roomId, startDate, startTime, stateId }: { id: number, movieId: number, roomId: number, startDate: string, startTime: string, stateId: number }) {
+    async updateSchedule({ id, movieId, roomId, startDate, startTime, stateId }: { id: number, movieId?: number, roomId?: number, startDate?: string, startTime?: string, stateId?: number }) {
+        const fields: string[] = []
+        const values: (string | number)[] = []
 
+        if (movieId) {
+            fields.push("movie_id = ?")
+            values.push(movieId)
+        }
+
+        if (roomId) {
+            fields.push("room_id = ?")
+            values.push(roomId)
+        }
+
+        if (startDate) {
+            fields.push("start_date = ?")
+            values.push(startDate)
+        }
+
+        if (startTime) {
+            fields.push("start_time = ?")
+            values.push(startTime)
+        }
+
+        if (stateId) {
+            fields.push("schedules_states = ?")
+            values.push(stateId)
+        }
+
+        if (fields.length === 0) {
+            return false
+        }
+
+        values.push(id)
+
+        const query = `
+            UPDATE schedules 
+            SET ${fields} 
+            WHERE id = ?
+        `
+
+        await this.pool.query(query, values)
+        return await this.getScheduleById({ id })
     }
 }
