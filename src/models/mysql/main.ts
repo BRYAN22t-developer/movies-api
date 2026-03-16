@@ -6,6 +6,7 @@ const DEFAULT_DB_CONFIG = {
     user: "root",
     password: "",
     database: "movies",
+    dateStrings: true,
 };
 
 export class MySQLModel {
@@ -25,6 +26,7 @@ export class MySQLModel {
         `
 
     constructor() {
+        //TODO: IF CONNECTION IS VIA URL MUST CONTAINER DATESTRING TRUE
         this.pool = mysql2.createPool(DEFAULT_DB_CONFIG);
     }
 
@@ -285,6 +287,82 @@ export class MySQLModel {
         const query = "UPDATE schedules_states SET state = ? WHERE id = ?"
         await this.pool.query(query, [state, id])
         const [result] = await this.pool.query("SELECT state FROM schedules_states WHERE id = ?", [id])
+        return result
+    }
+
+    async getSchedules({startDate, endDate, startTime, endTime}: {startDate?: string, endDate?: string, startTime?: string, endTime?: string}){
+        let query = `
+            SELECT 
+                m.title,
+                s.start_time ,
+                r.room,
+                st.state
+            FROM schedules s
+            JOIN movies m ON m.id = s.movie_id
+            JOIN rooms r ON r.id = s.room_id
+            JOIN schedules_states st ON st.id = s.state_id
+        `
+        const whereClauses: string[] = []
+        const params: (string | number)[] = []
+
+        if(startDate){
+            whereClauses.push("DATE(s.start_time) >= ?")
+            params.push(startDate)
+        }
+
+        if(endDate){
+            whereClauses.push("DATE(s.start_time) <= ?")
+            params.push(endDate)
+        }
+
+        if(startTime){
+            whereClauses.push("TIME(s.start_time) >= ?")
+            params.push(startTime)
+        }
+
+        if(endTime){
+            whereClauses.push("TIME(s.start_time) <= ?")
+            params.push(endTime)
+        }
+
+        query += whereClauses.length > 0 ? ` WHERE ${whereClauses.join(" AND ")}` : ""
+        query += " ORDER BY s.start_time ASC"
+
+        console.log(query, params)
+
+        const [schedules] = await this.pool.query(query, params)
+        return schedules;
+    }
+
+    async getScheduleById({id}: {id: number}){
+        const query = `
+            SELECT 
+            m.title,
+            s.start_time ,
+            r.room,
+            st.state
+        FROM schedules s
+        JOIN movies m ON m.id = s.movie_id
+        JOIN rooms r ON r.id = s.room_id
+        JOIN schedules_states st ON st.id = s.state_id
+        WHERE s.id = ?
+		ORDER BY s.id DESC
+        ;
+        `
+        const [schedule] = await this.pool.query(query, [id])
+        return schedule
+    }
+
+    async createSchedule({movieId, roomId, startDate, startTime, stateId}: {movieId: number, roomId: number, startDate: string, startTime: string, stateId: number}){
+        const query = `
+            INSERT INTO schedules (movie_id, room_id, start_time, state_id)
+            VALUES (?, ?, ?, ?)
+        `
+        const [newSchedule] = await this.pool.query(query, [movieId, roomId, (`${startDate} ${startTime}`), stateId])
+        const newScheduleId = (newSchedule as any).insertId
+
+        const result = await this.getScheduleById({id: newScheduleId})
+
         return result
     }
 }

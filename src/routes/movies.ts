@@ -22,6 +22,18 @@ export function createMoviesRouter(): Router {
         moviesController.updateScheduleState(req, res)
     })
 
+     router.get("/schedules", (req, res) => {
+        moviesController.getSchedules(req, res)
+    })
+
+    router.get("/schedules/:id", (req, res) => {
+        moviesController.getScheduleById(req, res)
+    })
+
+    router.post("/schedules", (req, res) => {
+        moviesController.createSchedule(req, res)
+    })
+
     //#region movies genres
 
     router.get("/", (req, res) => {

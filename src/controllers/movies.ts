@@ -99,4 +99,22 @@ export class MoviesController {
         const result = await this.model.updateScheduleState({ id: parsedId, ...req.body })
         res.json(result)
     }
+
+    async getSchedules(req: Request, res: Response){
+        const {startDate, endDate, startTime, endTime} = req.query
+        const schedules = await this.model.getSchedules({startDate: startDate as string, endDate: endDate as string, startTime: startTime as string, endTime: endTime as string})
+        res.json(schedules)
+    }
+
+    async getScheduleById(req: Request, res: Response){
+        const {id} = req.params;
+        const parsedId = Number(id)
+        const schedule = await this.model.getScheduleById({id: parsedId})
+        res.json(schedule)
+    }   
+
+    async createSchedule(req: Request, res: Response){
+        const newSchedule = await this.model.createSchedule({...req.body})
+        res.status(201).json(newSchedule)
+    }
 }
