@@ -76,6 +76,8 @@ export class MoviesController {
 
     //#endregion
 
+    //#region schedules
+
     async getScheduleStates(req: Request, res: Response) {
         const states = await this.model.getScheduleStates()
         res.json(states)
@@ -122,5 +124,12 @@ export class MoviesController {
         const { id } = req.params
         const updatedSchedule = await this.model.updateSchedule({ ...req.body, id: Number(id) })
         res.json(updatedSchedule)
+    }
+
+    //#endregion
+
+    async getReservations(req: Request, res: Response){
+        const reservations = await this.model.getReservations();
+        res.json(reservations)
     }
 }

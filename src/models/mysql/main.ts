@@ -6,6 +6,7 @@ const DEFAULT_DB_CONFIG = {
     user: "root",
     password: "",
     database: "movies",
+    dateStrings: true
 };
 
 export class MySQLModel {
@@ -416,5 +417,24 @@ export class MySQLModel {
     //#endregion
 
 
+    async getReservations(){
+        const query = `
+            SELECT 
+                s.start_time,
+                s.start_date,
+                ro.room,
+                concat(se.current_row, se.number) AS seat
+                
+            FROM reservations r
+            JOIN schedules s ON s.id = r.schedule_id
+            JOIN seats se ON se.id = r.seat_id
+            JOIN reservation_states rs ON rs.id = r.state_id
+            JOIN rooms ro ON ro.id = se.room_id
+        `
+        
+        const [reservations] = await this.pool.query(query)
+
+        return reservations
+    }
 
 }

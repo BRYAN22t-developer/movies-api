@@ -6,6 +6,12 @@ export function createMoviesRouter(): Router {
     const router = Router();
     const moviesController = new MoviesController(new MySQLModel());
 
+    router.get("/reservations", (req, res) => {
+        moviesController.getReservations(req, res)
+    })
+
+    //#region schedules
+
     router.get("/schedules/states", (req, res) => {
         moviesController.getScheduleStates(req, res)
     })
@@ -37,6 +43,8 @@ export function createMoviesRouter(): Router {
     router.patch("/schedules/:id", (req, res) => {
         moviesController.updateSchedule(req, res)
     })
+
+    //#endregion
 
     //#region movies genres
 
