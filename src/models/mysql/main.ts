@@ -56,12 +56,12 @@ export class MySQLModel {
             params.push(`%${search}%`, `%${search}%`);
         }
 
-        if(limit){
+        if (limit) {
             complement.push("LIMIT ?")
             params.push(limit)
         }
 
-        if(offset){
+        if (offset) {
             complement.push("OFFSET ?")
             params.push(offset)
         }
@@ -210,7 +210,7 @@ export class MySQLModel {
             values.push(duration_minutes)
         }
 
-        
+
 
         const assignGenres = async (movieId: number, genres: string[]) => {
             await this.pool.query("DELETE FROM movies_genres WHERE movie_id = ?", [movieId])
@@ -238,7 +238,7 @@ export class MySQLModel {
 
         }
 
-        if(genres){
+        if (genres) {
             assignGenres(id, genres)
         }
 
@@ -283,18 +283,19 @@ export class MySQLModel {
         return result
     }
 
-    async updateScheduleState({id, state}: {id: number, state: string}){
+    async updateScheduleState({ id, state }: { id: number, state: string }) {
         const query = "UPDATE schedules_states SET state = ? WHERE id = ?"
         await this.pool.query(query, [state, id])
         const [result] = await this.pool.query("SELECT state FROM schedules_states WHERE id = ?", [id])
         return result
     }
 
-    async getSchedules({startDate, endDate, startTime, endTime}: {startDate?: string, endDate?: string, startTime?: string, endTime?: string}){
+    async getSchedules({ startDate, endDate, startTime, endTime }: { startDate?: string, endDate?: string, startTime?: string, endTime?: string }) {
         let query = `
             SELECT 
                 m.title,
-                s.start_time ,
+                s.start_date,
+                s.start_time,
                 r.room,
                 st.state
             FROM schedules s
@@ -305,28 +306,28 @@ export class MySQLModel {
         const whereClauses: string[] = []
         const params: (string | number)[] = []
 
-        if(startDate){
-            whereClauses.push("DATE(s.start_time) >= ?")
+        if (startDate) {
+            whereClauses.push("s.start_date >= ?")
             params.push(startDate)
         }
 
-        if(endDate){
-            whereClauses.push("DATE(s.start_time) <= ?")
+        if (endDate) {
+            whereClauses.push("s.start_date <= ?")
             params.push(endDate)
         }
 
-        if(startTime){
-            whereClauses.push("TIME(s.start_time) >= ?")
+        if (startTime) {
+            whereClauses.push("s.start_time >= ?")
             params.push(startTime)
         }
 
-        if(endTime){
-            whereClauses.push("TIME(s.start_time) <= ?")
+        if (endTime) {
+            whereClauses.push("s.start_time <= ?")
             params.push(endTime)
         }
 
         query += whereClauses.length > 0 ? ` WHERE ${whereClauses.join(" AND ")}` : ""
-        query += " ORDER BY s.start_time ASC"
+        query += " ORDER BY s.start_date ASC"
 
         console.log(query, params)
 
@@ -334,11 +335,12 @@ export class MySQLModel {
         return schedules;
     }
 
-    async getScheduleById({id}: {id: number}){
+    async getScheduleById({ id }: { id: number }) {
         const query = `
             SELECT 
             m.title,
-            s.start_time ,
+            s.start_date,
+            s.start_time,
             r.room,
             st.state
         FROM schedules s
@@ -353,16 +355,20 @@ export class MySQLModel {
         return schedule
     }
 
-    async createSchedule({movieId, roomId, startDate, startTime, stateId}: {movieId: number, roomId: number, startDate: string, startTime: string, stateId: number}){
+    async createSchedule({ movieId, roomId, startDate, startTime, stateId }: { movieId: number, roomId: number, startDate: string, startTime: string, stateId: number }) {
         const query = `
-            INSERT INTO schedules (movie_id, room_id, start_time, state_id)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO schedules (movie_id, room_id, start_time, start_date, state_id)
+            VALUES (?, ?, ?, ?, ?)
         `
-        const [newSchedule] = await this.pool.query(query, [movieId, roomId, (`${startDate} ${startTime}`), stateId])
+        const [newSchedule] = await this.pool.query(query, [movieId, roomId, startTime, startDate, stateId])
         const newScheduleId = (newSchedule as any).insertId
 
-        const result = await this.getScheduleById({id: newScheduleId})
+        const result = await this.getScheduleById({ id: newScheduleId })
 
         return result
+    }
+
+    async updateSchedule({ id, movieId, roomId, startDate, startTime, stateId }: { id: number, movieId: number, roomId: number, startDate: string, startTime: string, stateId: number }) {
+
     }
 }
