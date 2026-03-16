@@ -10,6 +10,10 @@ export function createMoviesRouter(): Router {
         moviesController.getReservations(req, res)
     })
 
+    router.get("/reservations/:id", (req, res) => {
+        moviesController.getReservationById(req, res)
+    })
+
     //#region schedules
 
     router.get("/schedules/states", (req, res) => {

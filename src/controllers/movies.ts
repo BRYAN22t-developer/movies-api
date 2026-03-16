@@ -132,4 +132,10 @@ export class MoviesController {
         const reservations = await this.model.getReservations();
         res.json(reservations)
     }
+
+    async getReservationById(req: Request, res:Response){
+        const {id} = req.params
+        const reservation = await this.model.getReservationById({id: Number(id)})
+        res.json(reservation)
+    }
 }
