@@ -6,7 +6,6 @@ const DEFAULT_DB_CONFIG = {
     user: "root",
     password: "",
     database: "movies",
-    dateStrings: true,
 };
 
 export class MySQLModel {
@@ -26,7 +25,6 @@ export class MySQLModel {
         `
 
     constructor() {
-        //TODO: IF CONNECTION IS VIA URL MUST CONTAINER DATESTRING TRUE
         this.pool = mysql2.createPool(DEFAULT_DB_CONFIG);
     }
 
@@ -261,6 +259,8 @@ export class MySQLModel {
 
     //#endregion
 
+    //#region schedules
+
     async getScheduleStates() {
         const query = "SELECT state FROM schedules_states"
         const [states] = await this.pool.query<RowDataPacket[]>(query)
@@ -412,4 +412,9 @@ export class MySQLModel {
         await this.pool.query(query, values)
         return await this.getScheduleById({ id })
     }
+
+    //#endregion
+
+
+
 }
