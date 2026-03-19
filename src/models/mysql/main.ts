@@ -29,6 +29,27 @@ export class MySQLModel {
         this.pool = mysql2.createPool(DEFAULT_DB_CONFIG);
     }
 
+    async login({ username, password }: { username: string, password: string }) {
+        if (!username || !password) return { Error: "Invalid Data" };
+
+        const [rows] = await this.pool.query<RowDataPacket[]>(
+            "SELECT username, password FROM users WHERE username = ?",
+            [username]
+        );
+
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return { Error: "User does not exist" };
+        }
+
+        const passwordMatches = password == rows[0]?.password
+        /* const passwordMatches = await bcrypt.compare(password, rows[0].password); */
+        if (!passwordMatches) return { Error: "Wrong password" };
+
+        return { Message: "Login successful" };
+    }
+
+
+
     //#region movies and genres
 
     async getMovies({ genre, search, limit, offset }: { genre?: string, search?: string, limit?: number, offset?: number }) {

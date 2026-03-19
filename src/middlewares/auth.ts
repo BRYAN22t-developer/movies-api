@@ -3,7 +3,7 @@ import jwt, { type JwtPayload } from "jsonwebtoken"
 
 const unAuthEndPoints = ["/", "/login"]
 
-export function auth({ req, res, next }: { req: Request, res: Response, next: NextFunction }) {
+export function auth(req: Request, res: Response, next: NextFunction ) {
     if (endPointIsAllowed(req.path)) return next()
 
     const authToken = req.cookies?.authToken

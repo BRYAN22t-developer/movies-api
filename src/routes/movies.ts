@@ -32,7 +32,7 @@ export function createMoviesRouter(): Router {
         moviesController.updateScheduleState(req, res)
     })
 
-     router.get("/schedules", (req, res) => {
+    router.get("/schedules", (req, res) => {
         moviesController.getSchedules(req, res)
     })
 
