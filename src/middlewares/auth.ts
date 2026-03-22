@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import jwt, { type JwtPayload } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 
-const unAuthEndPoints = ["/", "/login"]
+const unAuthEndPoints = ["/", "/auth/login"]
 
 export function auth(req: Request, res: Response, next: NextFunction ) {
     if (endPointIsAllowed(req.path)) return next()
