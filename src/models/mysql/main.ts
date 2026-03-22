@@ -29,6 +29,16 @@ export class MySQLModel {
         this.pool = mysql2.createPool(DEFAULT_DB_CONFIG);
     }
 
+    async register({ username, password }: { username: string, password: string }){
+        if (!username || !password) return { Error: "Invalid Data" };
+
+        const [rows] = await this.pool.query<RowDataPacket[]>("INSERT INTO users (username, password) VALUES (?, ?)", [username, password])
+
+        const userId = (rows as any).insertId
+
+        return {"Id": userId}
+    }
+
     async login({ username, password }: { username: string, password: string }) {
         if (!username || !password) return { Error: "Invalid Data" };
 
