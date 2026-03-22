@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { AuthController } from "../controllers/authentication.js";
+import { AuthController } from "../controllers/auth.js";
 import { MySQLModel } from "../models/mysql/main.js";
 
 export function createAuthRouter(): Router{

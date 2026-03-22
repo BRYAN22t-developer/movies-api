@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createMoviesRouter } from "./movies.js";
-import { authentication } from "../middlewares/authentication.js";
-import { createAuthRouter } from "./authentication.js";
+import { authentication } from "../middlewares/auth.js";
+import { createAuthRouter } from "./auth.js";
 
 export function createMainRouter(): Router {
     const router = Router();
@@ -12,7 +12,7 @@ export function createMainRouter(): Router {
         res.json({ message: "Welcome to the Movies API!" });
     });
 
-    router.use("/authentication", createAuthRouter())
+    router.use("/auth", createAuthRouter())
 
     router.use("/movies", createMoviesRouter());
 
