@@ -11,17 +11,17 @@ export class AuthController {
     async register(req: Request, res: Response) {
         const { username, password, role } = req.body;
         const result = await this.model.register({username, password, role})
-        res.json(result)
+        res.status(201).json(result)
     }
 
     async login(req: Request, res: Response) {
         const { username, password } = req.body;
-        if (!username || !password) return res.json({ Error: "Invalid Data" });
+        if (!username || !password) return res.status(400).json({ Error: "Invalid Data" });
 
         const result = await this.model.login({ username, password });
 
         if (result?.Error) {
-            return res.json(result);
+            return res.status(401).json(result);
         }
 
         if (!process.env.JWT_SECRET) throw new Error("SECRET_KEY is not defined")

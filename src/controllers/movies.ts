@@ -39,12 +39,12 @@ export class MoviesController {
         }
 
         const newMovie = await this.model.createMovie({ ...req.body })
-        res.json(newMovie)
+        res.status(201).json(newMovie)
     }
 
     async createGenre(req: Request, res: Response) {
         const newGenre = await this.model.createGenre({ ...req.body })
-        res.json(newGenre)
+        res.status(201).json(newGenre)
     }
 
     async deleteGenre(req: Request, res: Response) {
@@ -85,7 +85,7 @@ export class MoviesController {
 
     async createScheduleState(req: Request, res: Response) {
         const state = await this.model.createScheduleState({ ...req.body })
-        res.json(state)
+        res.status(201).json(state)
     }
 
     async deleteScheduleState(req: Request, res: Response) {
