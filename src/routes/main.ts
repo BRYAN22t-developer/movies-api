@@ -13,7 +13,7 @@ export function createMainRouter(): Router {
         res.json({ message: "Welcome to the Movies API!" });
     });
 
-    router.use("/auth", createAuthRouter())
+    router.use("/auth", createAuthRouter(authenticator))
 
     router.use("/movies", createMoviesRouter(authenticator));
 

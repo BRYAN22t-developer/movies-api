@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken"
 import { MySQLModel } from "../models/mysql/main.js";
 
-const DEFAULT_UNAUTHENTICATED_ENDPOINTS = ["/", "/auth/login", "/auth/register"]
+const DEFAULT_UNAUTHENTICATED_ENDPOINTS = ["/", "/auth/login"]
 
 export class Auth {
     private readonly unAuthenticatedEndPoints: String[]
