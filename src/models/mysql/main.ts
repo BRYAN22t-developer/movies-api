@@ -1,5 +1,6 @@
 import type { Pool, RowDataPacket } from "mysql2/promise";
 import mysql2 from "mysql2/promise";
+import bcrypt from "bcrypt"
 
 const DEFAULT_DB_CONFIG = {
     host: "localhost",
@@ -29,12 +30,28 @@ export class MySQLModel {
         this.pool = mysql2.createPool(DEFAULT_DB_CONFIG);
     }
 
-    async register({ username, password }: { username: string, password: string }){
+    async register({ username, password, role}: { username: string, password: string, role: string}){
         if (!username || !password) return { Error: "Invalid Data" };
 
-        const [rows] = await this.pool.query<RowDataPacket[]>("INSERT INTO users (username, password) VALUES (?, ?)", [username, password])
+        const SALT_ROUNDS = Number(process.env.SALT_ROUNDS) 
+
+        console.log(SALT_ROUNDS)
+
+        if(!SALT_ROUNDS) return {Error: "crypt password key is not defined "}
+
+        const criptedPassword = await bcrypt.hash(password, SALT_ROUNDS)
+
+        const [rows] = await this.pool.query<RowDataPacket[]>("INSERT INTO users (username, password) VALUES (?, ?)", [username, criptedPassword])
 
         const userId = (rows as any).insertId
+
+        console.log("Role:", role)
+
+        const roleId = await this.getRoleIdByName(role)
+
+        console.log("RoleId:", role)
+
+        await this.pool.query("INSERT INTO users_roles (user_id, role_id) VALUES (?, ?)", [userId, roleId])
 
         return {"Id": userId}
     }
@@ -51,7 +68,7 @@ export class MySQLModel {
             return { Error: "User does not exist" };
         }
 
-        const passwordMatches = password == rows[0]?.password
+        const passwordMatches = await bcrypt.compare(password, rows[0]?.password) //password == rows[0]?.password
         /* const passwordMatches = await bcrypt.compare(password, rows[0].password); */
         if (!passwordMatches) return { Error: "Wrong password" };
 
@@ -78,6 +95,13 @@ export class MySQLModel {
     async getUserIdByUsername({username}: {username: string}){
         const query = "SELECT id FROM users WHERE username = ?"
         const [rows] = await this.pool.query<RowDataPacket[]>(query, [username])
+        return rows[0]?.id
+    }
+
+    async getRoleIdByName(name: string){
+        const query = "SELECT id FROM roles WHERE LOWER(roles.role) = LOWER(?)"
+        const [rows] = await this.pool.query<RowDataPacket[]>(query, [name])
+        console.log("Returned role: ", rows, " Name: ", name)
         return rows[0]?.id
     }
 

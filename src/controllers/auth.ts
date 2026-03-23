@@ -9,8 +9,8 @@ export class AuthController {
     }
 
     async register(req: Request, res: Response) {
-        const { username, password } = req.body;
-        const result = await this.model.register({username, password})
+        const { username, password, role } = req.body;
+        const result = await this.model.register({username, password, role})
         res.json(result)
     }
 
