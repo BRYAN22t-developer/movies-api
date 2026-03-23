@@ -58,7 +58,28 @@ export class MySQLModel {
         return { Message: "Login successful" };
     }
 
+    async permissionIsAllowed({userId, permission}: {userId: number, permission: string}){
+        const query = `
+            SELECT EXISTS (
+                SELECT 1
+                FROM users_roles ur
+                JOIN roles_permissions rp ON ur.role_id = rp.role_id
+                JOIN permissions p ON p.id = rp.permission_id
+                WHERE ur.user_id = ?
+                AND p.permission = ?
+            ) AS has_permission;
+        `
 
+        const [rows] = await this.pool.query<RowDataPacket[]>(query, [userId, permission])
+
+        return Boolean(rows[0]?.has_permission)
+    }
+
+    async getUserIdByUsername({username}: {username: string}){
+        const query = "SELECT id FROM users WHERE username = ?"
+        const [rows] = await this.pool.query<RowDataPacket[]>(query, [username])
+        return rows[0]?.id
+    }
 
     //#region movies and genres
 

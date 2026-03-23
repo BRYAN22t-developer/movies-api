@@ -26,7 +26,9 @@ export class AuthController {
 
         if (!process.env.JWT_SECRET) throw new Error("SECRET_KEY is not defined")
 
-        const authToken = Jwt.sign({ username }, process.env.JWT_SECRET, {
+        const authToken = Jwt.sign({
+             username
+            }, process.env.JWT_SECRET, {
             expiresIn: "30m",
         });
 

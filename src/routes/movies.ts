@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { MoviesController } from "../controllers/movies.js";
 import { MySQLModel } from "../models/mysql/main.js";
+import type { Auth } from "../middlewares/auth.js";
 
-export function createMoviesRouter(): Router {
+export function createMoviesRouter(authorizator: Auth): Router {
     const router = Router();
     const moviesController = new MoviesController(new MySQLModel());
 
-    router.get("/reservations", (req, res) => {
+    router.get("/reservations", (req, res, next) => authorizator.authorization(req, res, next, "reservations:read"), (req, res) => {
         moviesController.getReservations(req, res)
     })
 
@@ -56,7 +57,7 @@ export function createMoviesRouter(): Router {
         moviesController.getMovies(req, res);
     });
 
-    router.post("/", (req, res) => {
+    router.post("/", (req, res, next) => authorizator.authorization(req, res, next, "movies:create"), (req, res) => {
         moviesController.createMovie(req, res)
     })
 
