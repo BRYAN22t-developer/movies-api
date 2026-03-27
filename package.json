@@ -37,6 +37,6 @@
     "typescript": "5.9.3"
   },
   "eslintConfig": {
-    "extends": "eslint"
+    "extends": "prettier"
   }
 }

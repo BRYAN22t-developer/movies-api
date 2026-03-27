@@ -30,14 +30,14 @@ export class MySQLModel {
         this.pool = mysql2.createPool(DEFAULT_DB_CONFIG);
     }
 
-    async register({ username, password, role}: { username: string, password: string, role: string}){
+    async register({ username, password, role }: { username: string, password: string, role: string }) {
         if (!username || !password) return { Error: "Invalid Data" };
 
-        const SALT_ROUNDS = Number(process.env.SALT_ROUNDS) 
+        const SALT_ROUNDS = Number(process.env.SALT_ROUNDS)
 
         console.log(SALT_ROUNDS)
 
-        if(!SALT_ROUNDS) return {Error: "crypt password key is not defined "}
+        if (!SALT_ROUNDS) return { Error: "crypt password key is not defined " }
 
         const criptedPassword = await bcrypt.hash(password, SALT_ROUNDS)
 
@@ -53,7 +53,7 @@ export class MySQLModel {
 
         await this.pool.query("INSERT INTO users_roles (user_id, role_id) VALUES (?, ?)", [userId, roleId])
 
-        return {"Id": userId}
+        return { "Id": userId }
     }
 
     async login({ username, password }: { username: string, password: string }) {
@@ -75,7 +75,7 @@ export class MySQLModel {
         return { Message: "Login successful" };
     }
 
-    async permissionIsAllowed({userId, permission}: {userId: number, permission: string}){
+    async permissionIsAllowed({ userId, permission }: { userId: number, permission: string }) {
         const query = `
             SELECT EXISTS (
                 SELECT 1
@@ -92,13 +92,13 @@ export class MySQLModel {
         return Boolean(rows[0]?.has_permission)
     }
 
-    async getUserIdByUsername({username}: {username: string}){
+    async getUserIdByUsername({ username }: { username: string }) {
         const query = "SELECT id FROM users WHERE username = ?"
         const [rows] = await this.pool.query<RowDataPacket[]>(query, [username])
         return rows[0]?.id
     }
 
-    async getRoleIdByName(name: string){
+    async getRoleIdByName(name: string) {
         const query = "SELECT id FROM roles WHERE LOWER(roles.role) = LOWER(?)"
         const [rows] = await this.pool.query<RowDataPacket[]>(query, [name])
         console.log("Returned role: ", rows, " Name: ", name)

@@ -1,0 +1,1 @@
+export const UNAUTHENTICATED_ENDPOINTS = ["/", "/auth/login", "/health"]

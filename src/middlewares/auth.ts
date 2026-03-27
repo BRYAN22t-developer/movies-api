@@ -45,12 +45,12 @@ export class Auth {
 
             const payload = jwt.verify(authToken, JWT_SECRET) as Express.UserPayload
             req.user = payload
-            
-            const userId = await this.model.getUserIdByUsername({username: payload.username})
 
-            const hasPermission = await this.model.permissionIsAllowed({userId: Number(userId), permission})
+            const userId = await this.model.getUserIdByUsername({ username: payload.username })
 
-            if(!hasPermission) return res.json({ error : "Wrong access"})
+            const hasPermission = await this.model.permissionIsAllowed({ userId: Number(userId), permission })
+
+            if (!hasPermission) return res.json({ error: "Wrong access" })
 
             return next()
         } catch (e) {
