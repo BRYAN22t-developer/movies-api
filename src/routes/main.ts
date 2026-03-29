@@ -1,21 +1,32 @@
 import { Router } from "express";
 import { createMoviesRouter } from "./movies.js";
-import { Auth } from "../middlewares/auth.js";
 import { createAuthRouter } from "./auth.js";
+import type {
+  AuthControllerContract,
+  AuthenticatorContract,
+} from "../types/auth.types.js";
+import type { MoviesController } from "../controllers/movies.js";
 
-export function createMainRouter(): Router {
-    const router = Router();
+export function createMainRouter({
+  authenticator,
+  authController,
+  moviesController
+}: {
+  authenticator: AuthenticatorContract;
+  authController: AuthControllerContract;
+  moviesController: MoviesController
+}): Router {
+  const router = Router();
 
-    const authenticator = new Auth()
-    router.use((req, res, next) => authenticator.authentication(req, res, next))
+  router.use((req, res, next) => authenticator.authentication(req, res, next));
 
-    router.get("/", (req, res) => {
-        res.json({ message: "Welcome to the Movies API!" });
-    });
+  router.get("/", (req, res) => {
+    res.json({ message: "Welcome to the Movies API!" });
+  });
 
-    router.use("/auth", createAuthRouter(authenticator))
+  router.use("/auth", createAuthRouter({ authenticator, authController }));
 
-    router.use("/movies", createMoviesRouter(authenticator));
+  router.use("/movies", createMoviesRouter({ authenticator, moviesController}));
 
-    return router;
+  return router;
 }

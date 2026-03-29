@@ -1,16 +1,23 @@
 import type { Request, Response } from "express";
-import { MySQLModel } from "../models/mysql/main.js";
 import Jwt from "jsonwebtoken";
+import type {
+  AuthControllerContract,
+  AuthServiceContract,
+} from "../types/auth.types.js";
 
-export class AuthController {
-  private readonly model: MySQLModel;
-  constructor(model: MySQLModel) {
-    this.model = model;
+export class AuthController implements AuthControllerContract {
+  private readonly authService: AuthServiceContract;
+  constructor(authService: AuthServiceContract) {
+    this.authService = authService;
   }
 
   async register(req: Request, res: Response) {
     const { username, password, role } = req.body;
-    const result = await this.model.register({ username, password, role });
+    const result = await this.authService.register({
+      username,
+      password,
+      role,
+    });
     res.status(201).json(result);
   }
 
@@ -19,16 +26,17 @@ export class AuthController {
     if (!username || !password)
       return res.status(400).json({ Error: "Invalid Data" });
 
-    const result = await this.model.login({ username, password });
+    const result = await this.authService.login({ username, password });
 
-    if (result?.Error) {
+    if (!result.ok) {
       return res.status(401).json(result);
     }
 
-    if (!process.env.JWT_SECRET) throw new Error("SECRET_KEY is not defined");
+    if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined");
 
     const authToken = Jwt.sign(
       {
+        id: result.data.id,
         username,
       },
       process.env.JWT_SECRET,

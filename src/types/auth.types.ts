@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 
 export type RegisterData = {
   username: string;
@@ -27,7 +27,10 @@ export type ServiceResult<T> =
   | { ok: false; error: string };
 
 export interface AuthRepositoryContract {
-  createUser(data: { username: string; password: string }): Promise<number>;
+  createUser(data: {
+    username: string;
+    password: string;
+  }): Promise<ServiceResult<{ id: number }>>;
   findUserByUsername(username: string): Promise<UserAuthRecord | null>;
   assignRoleToUser(userId: number, roleId: number): Promise<void>;
   getRoleIdByName(name: string): Promise<number | null>;
@@ -36,10 +39,25 @@ export interface AuthRepositoryContract {
 
 export interface AuthServiceContract {
   register(data: RegisterData): Promise<ServiceResult<{ id: number }>>;
-  login(data: LoginData): Promise<ServiceResult<{ id: number; message: string }>>;
+  login(
+    data: LoginData,
+  ): Promise<ServiceResult<{ id: number; message: string }>>;
+  getRoleIdByName(name: string): Promise<number | null>;
+  permissionIsAllowed(data: PermissionIsAllowedData): Promise<boolean>;
 }
 
 export interface AuthControllerContract {
-  register(req: Request, res: Response): Promise<Response>;
-  login(req: Request, res: Response): Promise<Response>;
+  register(req: Request, res: Response): Promise<Response | void>;
+  login(req: Request, res: Response): Promise<Response | void>;
+}
+
+export interface AuthenticatorContract {
+  authentication: (req: Request, res: Response, next: NextFunction) => void;
+
+  authorization: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+    permission: string,
+  ) => void;
 }
