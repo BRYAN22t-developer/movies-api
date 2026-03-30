@@ -11,9 +11,9 @@ export class AuthRepository implements AuthRepositoryContract {
   private readonly pool: Pool;
 
   constructor() {
-    const AUTH_DATABASE_URL = process.env.AUTH_DATABASE_URL;
-    if (!AUTH_DATABASE_URL) throw new Error("AUTH_DATABASE_URL is not defined");
-    this.pool = mysql.createPool(AUTH_DATABASE_URL);
+    const DATABASE_URL = process.env.DATABASE_URL;
+    if (!DATABASE_URL) throw new Error("DATABASE_URL is not defined");
+    this.pool = mysql.createPool(DATABASE_URL);
   }
 
   async createUser(data: {
