@@ -1,20 +1,17 @@
 import { Router } from "express";
 import { createMoviesRouter } from "./movies.js";
 import { createAuthRouter } from "./auth.js";
-import type {
-  AuthControllerContract,
-  AuthenticatorContract,
-} from "../types/auth.types.js";
+import type { AuthController, Authenticator } from "../types/auth.types.js";
 import type { MoviesController } from "../controllers/movies.js";
 
 export function createMainRouter({
   authenticator,
   authController,
-  moviesController
+  moviesController,
 }: {
-  authenticator: AuthenticatorContract;
-  authController: AuthControllerContract;
-  moviesController: MoviesController
+  authenticator: Authenticator;
+  authController: AuthController;
+  moviesController: MoviesController;
 }): Router {
   const router = Router();
 
@@ -26,7 +23,10 @@ export function createMainRouter({
 
   router.use("/auth", createAuthRouter({ authenticator, authController }));
 
-  router.use("/movies", createMoviesRouter({ authenticator, moviesController}));
+  router.use(
+    "/movies",
+    createMoviesRouter({ authenticator, moviesController }),
+  );
 
   return router;
 }

@@ -26,7 +26,7 @@ export type ServiceResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
-export interface AuthRepositoryContract {
+export interface AuthRepository {
   createUser(data: {
     username: string;
     password: string;
@@ -37,7 +37,7 @@ export interface AuthRepositoryContract {
   permissionIsAllowed(data: PermissionIsAllowedData): Promise<boolean>;
 }
 
-export interface AuthServiceContract {
+export interface AuthService {
   register(data: RegisterData): Promise<ServiceResult<{ id: number }>>;
   login(
     data: LoginData,
@@ -46,12 +46,12 @@ export interface AuthServiceContract {
   permissionIsAllowed(data: PermissionIsAllowedData): Promise<boolean>;
 }
 
-export interface AuthControllerContract {
+export interface AuthController {
   register(req: Request, res: Response): Promise<Response | void>;
   login(req: Request, res: Response): Promise<Response | void>;
 }
 
-export interface AuthenticatorContract {
+export interface Authenticator {
   authentication: (req: Request, res: Response, next: NextFunction) => void;
 
   authorization: (

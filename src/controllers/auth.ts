@@ -1,13 +1,10 @@
 import type { Request, Response } from "express";
 import Jwt from "jsonwebtoken";
-import type {
-  AuthControllerContract,
-  AuthServiceContract,
-} from "../types/auth.types.js";
+import type { AuthController, AuthService } from "../types/auth.types.js";
 
-export class AuthController implements AuthControllerContract {
-  private readonly authService: AuthServiceContract;
-  constructor(authService: AuthServiceContract) {
+export class HttpAuthController implements AuthController {
+  private readonly authService: AuthService;
+  constructor(authService: AuthService) {
     this.authService = authService;
   }
 

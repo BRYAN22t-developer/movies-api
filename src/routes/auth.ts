@@ -1,15 +1,12 @@
 import { Router } from "express";
-import type {
-  AuthControllerContract,
-  AuthenticatorContract,
-} from "../types/auth.types.js";
+import type { AuthController, Authenticator } from "../types/auth.types.js";
 
 export function createAuthRouter({
   authenticator,
   authController,
 }: {
-  authenticator: AuthenticatorContract;
-  authController: AuthControllerContract;
+  authenticator: Authenticator;
+  authController: AuthController;
 }): Router {
   const router = Router();
 

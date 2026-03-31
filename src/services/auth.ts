@@ -1,6 +1,6 @@
 import type {
-  AuthRepositoryContract,
-  AuthServiceContract,
+  AuthRepository,
+  AuthService,
   LoginData,
   PermissionIsAllowedData,
   RegisterData,
@@ -8,10 +8,10 @@ import type {
 } from "../types/auth.types.js";
 import bcrypt from "bcrypt";
 
-export class AuthService implements AuthServiceContract {
-  private readonly authRepository: AuthRepositoryContract;
+export class DefaultAuthService implements AuthService {
+  private readonly authRepository: AuthRepository;
 
-  constructor(authRepository: AuthRepositoryContract) {
+  constructor(authRepository: AuthRepository) {
     this.authRepository = authRepository;
   }
 

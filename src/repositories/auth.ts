@@ -1,13 +1,13 @@
 import type { Pool, RowDataPacket } from "mysql2/promise";
 import mysql from "mysql2/promise";
 import type {
-  AuthRepositoryContract,
+  AuthRepository,
   PermissionIsAllowedData,
   ServiceResult,
   UserAuthRecord,
 } from "../types/auth.types.js";
 
-export class AuthRepository implements AuthRepositoryContract {
+export class MySQLAuthRepository implements AuthRepository {
   private readonly pool: Pool;
 
   constructor() {

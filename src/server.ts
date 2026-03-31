@@ -2,10 +2,7 @@ import express from "express";
 import type { Express } from "express";
 import { createMainRouter } from "./routes/main.js";
 import cookieParser from "cookie-parser";
-import type {
-  AuthControllerContract,
-  AuthenticatorContract,
-} from "./types/auth.types.js";
+import type { AuthController, Authenticator } from "./types/auth.types.js";
 import type { MoviesController } from "./controllers/movies.js";
 
 export function createServer({
@@ -13,8 +10,8 @@ export function createServer({
   authController,
   moviesController,
 }: {
-  authenticator: AuthenticatorContract;
-  authController: AuthControllerContract;
+  authenticator: Authenticator;
+  authController: AuthController;
   moviesController: MoviesController;
 }): Express {
   const app = express();

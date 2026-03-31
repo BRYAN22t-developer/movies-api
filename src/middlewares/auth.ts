@@ -1,18 +1,12 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import type {
-  AuthenticatorContract,
-  AuthServiceContract,
-} from "../types/auth.types.js";
+import type { Authenticator, AuthService } from "../types/auth.types.js";
 
-export class Auth implements AuthenticatorContract {
+export class Auth implements Authenticator {
   private readonly unAuthenticatedEndPoints: String[];
-  private readonly authService: AuthServiceContract;
+  private readonly authService: AuthService;
 
-  constructor(
-    authService: AuthServiceContract,
-    unAuthenticatedEndPoints: String[],
-  ) {
+  constructor(authService: AuthService, unAuthenticatedEndPoints: String[]) {
     this.unAuthenticatedEndPoints = unAuthenticatedEndPoints;
     this.authService = authService;
   }
