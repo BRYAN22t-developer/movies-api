@@ -31,11 +31,13 @@ export class MySQLMoviesRepository implements MoviesRepository {
   ): Promise<ServiceResult<Movie[]>> {
     const { query, params } = this.getMovieQuery(filters);
     const [movies] = await this.pool.query<MovieRow[]>(query, params);
-    return { ok: true, data: this.parseMovie(movies) };
+    return { ok: true, data: this.parseMovies(movies) };
   }
 
-  findById(id: number): Promise<ServiceResult<Movie | null>> {
-    throw new Error("Method not implemented.");
+  async findById(id: number): Promise<ServiceResult<Movie | null>> {
+    const { query } = this.findByIdQuery();
+    const [movie] = await this.pool.query<MovieRow[]>(query, [id]);
+    return { ok: true, data: this.parseMovies(movie)[0] ?? null };
   }
 
   create(data: CreateMovieData): Promise<ServiceResult<Movie>> {
@@ -52,17 +54,36 @@ export class MySQLMoviesRepository implements MoviesRepository {
 
   //#region PRIVATE AND HELPERS METHODS
 
-  private parseMovie(movieRow: MovieRow[]): Movie[] {
-    return movieRow.map((row) => ({
+  private parseMovie(row: MovieRow): Movie {
+    return {
       id: row.id,
       title: row.title,
       description: row.description,
       poster_url: row.poster_url,
       duration_minutes: row.duration_minutes,
-      genres: Array.isArray(row.genres)
-        ? row.genres
-        : JSON.parse(row.genres as unknown as string),
-    }));
+      genres: Array.isArray(row.genres) ? row.genres : JSON.parse(row.genres),
+    };
+  }
+
+  private parseMovies(rows: MovieRow[]): Movie[] {
+    return rows.map((row) => this.parseMovie(row));
+  }
+
+  private findByIdQuery() {
+    const query = `
+    SELECT 
+      m.id,
+      m.title,
+      m.description,
+      m.poster_url,
+      m.duration_minutes,
+      JSON_ARRAYAGG(g.genre) AS genres
+    FROM movies m
+    JOIN movies_genres mg ON mg.movie_id = m.id
+    JOIN genres g ON g.id = mg.genre_id
+    WHERE m.id = ? GROUP BY m.id;
+    `;
+    return { query };
   }
 
   private getMovieQuery(filters?: MoviesFiltersData) {
