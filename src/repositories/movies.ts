@@ -40,12 +40,14 @@ export class MySQLMoviesRepository implements MoviesRepository {
     return { ok: true, data: this.parseMovies(movie)[0] ?? null };
   }
 
-  create(data: CreateMovieData): Promise<ServiceResult<Movie>> {
+  async create(data: CreateMovieData): Promise<ServiceResult<Movie>> {
     throw new Error("Method not implemented.");
   }
 
-  deleteById(id: number): Promise<ServiceResult<null>> {
-    throw new Error("Method not implemented.");
+  async deleteById(id: number): Promise<ServiceResult<null>> {
+    const query = "DELETE FROM movies where id = ?";
+    const [result] = await this.pool.query(query, [id]);
+    return { ok: true, data: null };
   }
 
   updateById(id: number, data: UpdateMovieData): Promise<ServiceResult<Movie>> {
