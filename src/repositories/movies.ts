@@ -90,8 +90,67 @@ export class MySQLMoviesRepository implements MoviesRepository {
     return { ok: true, data: null };
   }
 
-  updateById(id: number, data: UpdateMovieData): Promise<ServiceResult<Movie>> {
-    throw new Error("Method not implemented.");
+  async updateById(
+    id: number,
+    data: UpdateMovieData,
+  ): Promise<ServiceResult<Movie>> {
+    const connection = await this.pool.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const [existingRows] = await connection.query<RowDataPacket[]>(
+        "SELECT id FROM movies WHERE id = ? LIMIT 1",
+        [id],
+      );
+
+      if (!existingRows.length) {
+        return { ok: false, error: "Movie not found" };
+      }
+
+      const updateQuery = this.updateMovieQuery(id, data);
+
+      if (updateQuery) {
+        await connection.query(updateQuery.query, updateQuery.params);
+      }
+
+      if (data.genreIds !== undefined) {
+        if (!data.genreIds.length) {
+          return { ok: false, error: "At least one genre is required" };
+        }
+
+        const uniqueGenreIds = [...new Set(data.genreIds)];
+
+        await connection.query("DELETE FROM movies_genres WHERE movie_id = ?", [
+          id,
+        ]);
+
+        const { query: genresQuery, params: genresParams } =
+          this.assignGenresToMovieQuery(id, uniqueGenreIds);
+
+        await connection.query(genresQuery, genresParams);
+      }
+
+      const [rows] = await connection.query<MovieRow[]>(
+        this.findByIdQuery().query,
+        [id],
+      );
+
+      const movie = this.parseMovies(rows)[0];
+
+      if (!movie) {
+        throw new Error("Failed to fetch updated movie");
+      }
+
+      await connection.commit();
+
+      return { ok: true, data: movie };
+    } catch (e) {
+      await connection.rollback();
+      throw e;
+    } finally {
+      connection.release();
+    }
   }
 
   //#region PRIVATE AND HELPERS METHODS
@@ -130,6 +189,40 @@ export class MySQLMoviesRepository implements MoviesRepository {
     genreIds.forEach((genreId) => {
       params.push(movieId, genreId);
     });
+    return { query, params };
+  }
+
+  private updateMovieQuery(id: number, data: UpdateMovieData) {
+    const fields: string[] = [];
+    const params: (string | number)[] = [];
+
+    if (data.title !== undefined) {
+      fields.push("title = ?");
+      params.push(data.title);
+    }
+
+    if (data.description !== undefined) {
+      fields.push("description = ?");
+      params.push(data.description);
+    }
+
+    if (data.poster_url !== undefined) {
+      fields.push("poster_url = ?");
+      params.push(data.poster_url);
+    }
+
+    if (data.duration_minutes !== undefined) {
+      fields.push("duration_minutes = ?");
+      params.push(data.duration_minutes);
+    }
+
+    if (!fields.length) {
+      return null;
+    }
+
+    const query = `UPDATE movies SET ${fields.join(", ")} WHERE id = ?`;
+    params.push(id);
+
     return { query, params };
   }
 
