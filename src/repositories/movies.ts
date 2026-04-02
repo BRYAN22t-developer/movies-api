@@ -153,7 +153,7 @@ export class MySQLMoviesRepository implements MoviesRepository {
     }
   }
 
-  //#region PRIVATE AND HELPERS METHODS
+  //#region Private al helpers methods
 
   private parseMovie(row: MovieRow): Movie {
     return {
