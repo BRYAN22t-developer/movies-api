@@ -29,7 +29,7 @@ export class MySQLMoviesRepository implements MoviesRepository {
   async getMovies(
     filters?: MoviesFiltersData,
   ): Promise<ServiceResult<Movie[]>> {
-    const { query, params } = this.getMovieQuery(filters);
+    const { query, params } = this.getMoviesQuery(filters);
     const [movies] = await this.pool.query<MovieRow[]>(query, params);
     return { ok: true, data: this.parseMovies(movies) };
   }
@@ -41,7 +41,47 @@ export class MySQLMoviesRepository implements MoviesRepository {
   }
 
   async create(data: CreateMovieData): Promise<ServiceResult<Movie>> {
-    throw new Error("Method not implemented.");
+    if (!data.genreIds.length) {
+      return { ok: false, error: "At least one genre is required" };
+    }
+
+    const connection = await this.pool.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const { query, params } = this.createMovieQuery(data);
+      const [result] = await connection.query<mysql.ResultSetHeader>(
+        query,
+        params,
+      );
+      const movieId = result.insertId;
+
+      const { query: genresQuery, params: genresParams } =
+        this.assignGenresToMovieQuery(movieId, data.genreIds);
+
+      await connection.query(genresQuery, genresParams);
+
+      const [rows] = await connection.query<MovieRow[]>(
+        this.findByIdQuery().query,
+        [movieId],
+      );
+
+      const movie = this.parseMovies(rows)[0];
+
+      if (!movie) {
+        throw new Error("Failed to create movie");
+      }
+
+      await connection.commit();
+
+      return { ok: true, data: movie };
+    } catch (e) {
+      await connection.rollback();
+      throw e;
+    } finally {
+      connection.release();
+    }
   }
 
   async deleteById(id: number): Promise<ServiceResult<null>> {
@@ -71,6 +111,28 @@ export class MySQLMoviesRepository implements MoviesRepository {
     return rows.map((row) => this.parseMovie(row));
   }
 
+  private createMovieQuery(data: CreateMovieData) {
+    const { title, description, poster_url, duration_minutes } = data;
+    const query = `
+    INSERT INTO movies (title, description, poster_url, duration_minutes)
+    VALUES (?, ?, ?, ?);
+    `;
+    const params = [title, description, poster_url, duration_minutes];
+    return { query, params };
+  }
+
+  private assignGenresToMovieQuery(movieId: number, genreIds: number[]) {
+    const query = `
+    INSERT INTO movies_genres (movie_id, genre_id)
+    VALUES ${genreIds.map(() => "(?, ?)").join(", ")};
+    `;
+    const params: number[] = [];
+    genreIds.forEach((genreId) => {
+      params.push(movieId, genreId);
+    });
+    return { query, params };
+  }
+
   private findByIdQuery() {
     const query = `
     SELECT 
@@ -88,7 +150,7 @@ export class MySQLMoviesRepository implements MoviesRepository {
     return { query };
   }
 
-  private getMovieQuery(filters?: MoviesFiltersData) {
+  private getMoviesQuery(filters?: MoviesFiltersData) {
     let query = `
     SELECT 
       m.id,
