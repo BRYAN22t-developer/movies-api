@@ -4,20 +4,28 @@ export type ServiceResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
+export type ScheduleFilterData = {
+  startDate?: string;
+  endDate?: string;
+  startTime?: string;
+  endTime?: string;
+};
+
 export type Schedule = {
+  id: number;
   movieId: number;
   roomId: number;
   stateId: number;
   title: string;
   startTime: string;
-  endTime: string;
+  startDate: string;
 };
 
 export type createScheduleData = Omit<Schedule, "id">;
 export type updateScheduleData = Partial<createScheduleData>;
 
 export interface ScheduleRepository {
-  getSchedule(): Promise<ServiceResult<Schedule[]>>;
+  getSchedule(filters?: ScheduleFilterData): Promise<ServiceResult<Schedule[]>>;
   getScheduleById(id: number): Promise<ServiceResult<Schedule>>;
   createSchedule(data: createScheduleData): Promise<ServiceResult<Schedule>>;
   updateSchedule(
@@ -27,7 +35,7 @@ export interface ScheduleRepository {
 }
 
 export interface ScheduleService {
-  getSchedule(): Promise<ServiceResult<Schedule[]>>;
+  getSchedule(filters?: ScheduleFilterData): Promise<ServiceResult<Schedule[]>>;
   getScheduleById(id: number): Promise<ServiceResult<Schedule>>;
   createSchedule(data: createScheduleData): Promise<ServiceResult<Schedule>>;
   updateSchedule(
