@@ -27,6 +27,11 @@ export class DefaultGenresService implements GenresService {
   findGenreByName(name: string): Promise<ServiceResult<Genre | null>> {
     return this.genresRepository.findByName(name);
   }
+
+  findGenreByNames(names: string[]): Promise<ServiceResult<Genre[] | null>> {
+    return this.genresRepository.findByNames(names);
+  }
+
   deleteGenreById(id: number): Promise<ServiceResult<null>> {
     return this.genresRepository.deleteById(id);
   }

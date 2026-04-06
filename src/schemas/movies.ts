@@ -56,4 +56,12 @@ export class MovieSchema {
   async validatePartialCreate(data: unknown) {
     return this.createMovieSchema.partial().safeParse(data);
   }
+
+  private createGenreSchema = z.object({
+    name: z.string().min(1, "Genre name is required"),
+  });
+
+  async validateCreateGenre(data: unknown) {
+    return this.createGenreSchema.safeParse(data);
+  }
 }

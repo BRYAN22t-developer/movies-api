@@ -1,3 +1,5 @@
+import type { Request, Response } from "express";
+
 export type MoviesFiltersData = {
   genreIds?: number[];
   search?: string;
@@ -53,6 +55,7 @@ export interface GenresRepository {
   findById(id: number): Promise<ServiceResult<Genre | null>>;
   findByIds(ids: number[]): Promise<ServiceResult<Genre[] | null>>;
   findByName(name: string): Promise<ServiceResult<Genre | null>>;
+  findByNames(names: string[]): Promise<ServiceResult<Genre[] | null>>;
   deleteById(id: number): Promise<ServiceResult<null>>;
   updateById(id: number, data: UpdateGenreData): Promise<ServiceResult<Genre>>;
 }
@@ -74,9 +77,22 @@ export interface GenresService {
   findGenreById(id: number): Promise<ServiceResult<Genre | null>>;
   findGenreByIds(ids: number[]): Promise<ServiceResult<Genre[] | null>>;
   findGenreByName(name: string): Promise<ServiceResult<Genre | null>>;
+  findGenreByNames(names: string[]): Promise<ServiceResult<Genre[] | null>>;
   deleteGenreById(id: number): Promise<ServiceResult<null>>;
   updateGenreById(
     id: number,
     data: UpdateGenreData,
   ): Promise<ServiceResult<Genre>>;
+}
+
+export interface MoviesController {
+  getMovies(req: Request, res: Response): Promise<void | Response>;
+  getMovieById(req: Request, res: Response): Promise<void | Response>;
+  createMovie(req: Request, res: Response): Promise<void | Response>;
+  deleteMovieById(req: Request, res: Response): Promise<void | Response>;
+  updateMovieById(req: Request, res: Response): Promise<void | Response>;
+  deleteGenreById(req: Request, res: Response): Promise<void | Response>;
+  updateGenreById(req: Request, res: Response): Promise<void | Response>;
+  getGenres(req: Request, res: Response): Promise<void | Response>;
+  createGenre(req: Request, res: Response): Promise<void | Response>;
 }

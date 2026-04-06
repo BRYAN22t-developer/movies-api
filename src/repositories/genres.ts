@@ -19,7 +19,7 @@ type GenreRow = RowDataPacket & {
 
 export class MySQLGenresRepository implements GenresRepository {
   private readonly pool: Pool;
-  constructor(pool: Pool) {
+  constructor() {
     const DATABASE_URL = process.env.DATABASE_URL;
     if (!DATABASE_URL) throw new Error("DATABASE_URL is not defined");
     this.pool = mysql.createPool(DATABASE_URL);
@@ -70,6 +70,14 @@ export class MySQLGenresRepository implements GenresRepository {
     const genre = this.parseGenres(rows)[0] ?? null;
     return { ok: true, data: genre };
   }
+
+  async findByNames(names: string[]): Promise<ServiceResult<Genre[] | null>> {
+    const placeholders = names.map(() => "?").join(", ");
+    const query = `SELECT id, genre FROM genres WHERE genre IN (${placeholders})`;
+    const [rows] = await this.pool.query<GenreRow[]>(query, names);
+    return { ok: true, data: this.parseGenres(rows) };
+  }
+
   async deleteById(id: number): Promise<ServiceResult<null>> {
     const query = "DELETE FROM genres WHERE id = ?";
     const [result] = await this.pool.query(query, [id]);

@@ -1,13 +1,14 @@
 import type { MovieSchema } from "../schemas/movies.js";
 import type {
   GenresService,
+  MoviesController,
   MoviesFiltersData,
   MoviesService,
   UpdateMovieData,
 } from "../types/movies.types.js";
 import type { Request, Response } from "express";
 
-export class DefaultMoviesController {
+export class DefaultMoviesController implements MoviesController {
   private readonly moviesService: MoviesService;
   private readonly movieSchema: MovieSchema;
   private readonly genresService: GenresService;
@@ -26,7 +27,52 @@ export class DefaultMoviesController {
     this.genresService = genresService;
   }
 
-  async getMovies(req: Request, res: Response) {
+  async getGenres(req: Request, res: Response): Promise<void | Response> {
+    const result = await this.genresService.getGenres();
+    if (!result.ok) {
+      return res.status(500).json({ error: result.error });
+    }
+    return res.json(result.data);
+  }
+
+  async createGenre(req: Request, res: Response): Promise<void | Response> {
+    const result = await this.movieSchema.validateCreateGenre(req.body);
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+    const data = result.data;
+    const genre = await this.genresService.createGenre(data);
+    if (!genre.ok) {
+      return res.status(500).json({ error: genre.error });
+    }
+    return res.status(201).json(genre.data);
+  }
+
+  async deleteGenreById(req: Request, res: Response): Promise<void | Response> {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid genre ID" });
+    }
+    const result = await this.genresService.deleteGenreById(id);
+    if (!result.ok) {
+      return res.status(500).json({ error: result.error });
+    }
+    return res.status(204).send();
+  }
+
+  async updateGenreById(req: Request, res: Response): Promise<void | Response> {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid genre ID" });
+    }
+    const result = await this.genresService.updateGenreById(id, req.body);
+    if (!result.ok) {
+      return res.status(500).json({ error: result.error });
+    }
+    return res.json(result.data);
+  }
+
+  async getMovies(req: Request, res: Response): Promise<void | Response> {
     const result = await this.movieSchema.validateFilters(req.query);
     if (!result.success) {
       return res.status(400).json({ error: result.error });
@@ -36,7 +82,7 @@ export class DefaultMoviesController {
     res.json(movies);
   }
 
-  async getMovieById(req: Request, res: Response) {
+  async getMovieById(req: Request, res: Response): Promise<void | Response> {
     const id = Number(req.params.id);
     if (isNaN(id)) {
       return res.status(400).json({ error: "Invalid movie ID" });
@@ -51,17 +97,26 @@ export class DefaultMoviesController {
     res.json(movie.data);
   }
 
-  async createMovie(req: Request, res: Response) {
-    const result = await this.movieSchema.validateCreate(req.body);
+  async createMovie(req: Request, res: Response): Promise<void | Response> {
+    const { genres } = req.body;
+
+    const genresResult = await this.genresService.findGenreByNames(genres);
+    if (!genresResult.ok) {
+      return res.status(500).json({ error: genresResult.error });
+    }
+
+    const genreIds = genresResult.data?.map((genre) => genre.id) ?? [];
+
+    const result = await this.movieSchema.validateCreate({
+      ...req.body,
+      genreIds,
+    });
+
     if (!result.success) {
       return res.status(400).json({ error: result.error });
     }
     const data = result.data;
 
-    const genresResult = await this.genresService.findGenreByIds(data.genreIds);
-    if (!genresResult.ok) {
-      return res.status(500).json({ error: genresResult.error });
-    }
     if (
       !genresResult.data ||
       genresResult.data.length !== data.genreIds.length
@@ -76,7 +131,7 @@ export class DefaultMoviesController {
     res.status(201).json(movie.data);
   }
 
-  async deleteMovieById(req: Request, res: Response) {
+  async deleteMovieById(req: Request, res: Response): Promise<void | Response> {
     const id = Number(req.params.id);
     if (isNaN(id)) {
       return res.status(400).json({ error: "Invalid movie ID" });
@@ -88,12 +143,29 @@ export class DefaultMoviesController {
     res.status(204).send();
   }
 
-  async updateMovieById(req: Request, res: Response) {
+  async updateMovieById(req: Request, res: Response): Promise<void | Response> {
     const id = Number(req.params.id);
     if (isNaN(id)) {
       return res.status(400).json({ error: "Invalid movie ID" });
     }
-    const result = await this.movieSchema.validatePartialCreate(req.body);
+
+    const { genres } = req.body;
+
+    const genresResult = genres
+      ? await this.genresService.findGenreByNames(genres)
+      : null;
+    if (!genresResult?.ok) {
+      return res
+        .status(500)
+        .json({ error: genresResult?.error || "Failed to find genres" });
+    }
+
+    const genreIds = genresResult.data?.map((genre) => genre.id) ?? [];
+
+    const result = await this.movieSchema.validatePartialCreate({
+      ...req.body,
+      genreIds,
+    });
     if (!result.success) {
       return res.status(400).json({ error: result.error });
     }

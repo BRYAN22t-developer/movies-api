@@ -1,12 +1,15 @@
 import { Router } from "express";
-import { MoviesController } from "../controllers/oldMovies.js";
-import type { AuthenticatorContract } from "../types/auth.types.js";
+import { MoviesController as oldMoviesController } from "../controllers/oldMovies.js";
+import type { Authenticator } from "../types/auth.types.js";
+import type { MoviesController } from "../types/movies.types.js";
 
 export function createMoviesRouter({
   authenticator,
+  oldMoviesController,
   moviesController,
 }: {
-  authenticator: AuthenticatorContract;
+  authenticator: Authenticator;
+  oldMoviesController: oldMoviesController;
   moviesController: MoviesController;
 }): Router {
   const router = Router();
@@ -16,7 +19,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "reservations:read"),
     (req, res) => {
-      moviesController.getReservations(req, res);
+      oldMoviesController.getReservations(req, res);
     },
   );
 
@@ -25,7 +28,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "reservations:read"),
     (req, res) => {
-      moviesController.getReservationById(req, res);
+      oldMoviesController.getReservationById(req, res);
     },
   );
 
@@ -36,7 +39,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "schedules:read"),
     (req, res) => {
-      moviesController.getScheduleStates(req, res);
+      oldMoviesController.getScheduleStates(req, res);
     },
   );
 
@@ -45,7 +48,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "schedules:create"),
     (req, res) => {
-      moviesController.createScheduleState(req, res);
+      oldMoviesController.createScheduleState(req, res);
     },
   );
 
@@ -54,7 +57,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "schedules:delete"),
     (req, res) => {
-      moviesController.deleteScheduleState(req, res);
+      oldMoviesController.deleteScheduleState(req, res);
     },
   );
 
@@ -63,7 +66,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "schedules:update"),
     (req, res) => {
-      moviesController.updateScheduleState(req, res);
+      oldMoviesController.updateScheduleState(req, res);
     },
   );
 
@@ -72,7 +75,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "schedules:read"),
     (req, res) => {
-      moviesController.getSchedules(req, res);
+      oldMoviesController.getSchedules(req, res);
     },
   );
 
@@ -81,7 +84,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "schedules:read"),
     (req, res) => {
-      moviesController.getScheduleById(req, res);
+      oldMoviesController.getScheduleById(req, res);
     },
   );
 
@@ -90,7 +93,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "schedules:update"),
     (req, res) => {
-      moviesController.createSchedule(req, res);
+      oldMoviesController.createSchedule(req, res);
     },
   );
 
@@ -99,7 +102,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "schedules:update"),
     (req, res) => {
-      moviesController.updateSchedule(req, res);
+      oldMoviesController.updateSchedule(req, res);
     },
   );
 
@@ -157,7 +160,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "movies:delete"),
     (req, res) => {
-      moviesController.deleteMovie(req, res);
+      moviesController.deleteMovieById(req, res);
     },
   );
 
@@ -166,7 +169,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "movies:delete"),
     (req, res) => {
-      moviesController.deleteGenre(req, res);
+      moviesController.deleteGenreById(req, res);
     },
   );
 
@@ -175,7 +178,7 @@ export function createMoviesRouter({
     (req, res, next) =>
       authenticator.authorization(req, res, next, "movies:update"),
     (req, res) => {
-      moviesController.updateMovie(req, res);
+      moviesController.updateMovieById(req, res);
     },
   );
 
