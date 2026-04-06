@@ -21,7 +21,7 @@ export class MovieSchema {
   }
 
   private filtersSchema = z.object({
-    genresIds: z
+    genreIds: z
       .array(z.string())
       .transform((arr) => arr.map(Number))
       .optional(),
