@@ -1,141 +1,110 @@
+import type { MovieSchema } from "../schemas/movies.js";
+import type {
+  GenresService,
+  MoviesFiltersData,
+  MoviesService,
+  UpdateMovieData,
+} from "../types/movies.types.js";
 import type { Request, Response } from "express";
-import type { MySQLModel } from "../models/mysql/main.js";
-import { MovieSchema } from "../schemas/movies.js";
 
-export class MoviesController {
-    private readonly model: MySQLModel;
-    private readonly movieSchema: MovieSchema
-    constructor(model: MySQLModel) {
-        this.model = model;
-        this.movieSchema = new MovieSchema(this.model.getGenres.bind(this.model));
+export class DefaultMoviesController {
+  private readonly moviesService: MoviesService;
+  private readonly movieSchema: MovieSchema;
+  private readonly genresService: GenresService;
+
+  constructor({
+    moviesService,
+    movieSchema,
+    genresService,
+  }: {
+    moviesService: MoviesService;
+    movieSchema: MovieSchema;
+    genresService: GenresService;
+  }) {
+    this.moviesService = moviesService;
+    this.movieSchema = movieSchema;
+    this.genresService = genresService;
+  }
+
+  async getMovies(req: Request, res: Response) {
+    const result = await this.movieSchema.validateFilters(req.query);
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+    const filters = result.data as MoviesFiltersData;
+    const movies = await this.moviesService.getMovies(filters);
+    res.json(movies);
+  }
+
+  async getMovieById(req: Request, res: Response) {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid movie ID" });
+    }
+    const movie = await this.moviesService.findById(id);
+    if (!movie.ok) {
+      return res.status(500).json({ error: movie.error });
+    }
+    if (!movie.data) {
+      return res.status(404).json({ error: "Movie not found" });
+    }
+    res.json(movie.data);
+  }
+
+  async createMovie(req: Request, res: Response) {
+    const result = await this.movieSchema.validateCreate(req.body);
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+    const data = result.data;
+
+    const genresResult = await this.genresService.findGenreByIds(data.genreIds);
+    if (!genresResult.ok) {
+      return res.status(500).json({ error: genresResult.error });
+    }
+    if (
+      !genresResult.data ||
+      genresResult.data.length !== data.genreIds.length
+    ) {
+      return res.status(400).json({ error: "One or more genres not found" });
     }
 
-    //#region Movies and genres
-
-    async getMovies(req: Request, res: Response) {
-        const { genre, search, limit, offset } = req.query;
-
-        const movies = await this.model.getMovies({ genre: genre as string, search: search as string, limit: Number(limit), offset: Number(offset) });
-        res.json(movies);
+    const movie = await this.moviesService.createMovie(data);
+    if (!movie.ok) {
+      return res.status(500).json({ error: movie.error });
     }
+    res.status(201).json(movie.data);
+  }
 
-    async getMovieById(req: Request, res: Response) {
-        const { id } = req.params;
-        const parsedId = Number(id);
-        const movie = await this.model.getMovieById({ id: parsedId });
-        res.json(movie);
+  async deleteMovieById(req: Request, res: Response) {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid movie ID" });
     }
-
-    async getGenres(req: Request, res: Response) {
-        const genres = await this.model.getGenres()
-        res.json(genres)
+    const result = await this.moviesService.deleteMovieById(id);
+    if (!result.ok) {
+      return res.status(500).json({ error: result.error });
     }
+    res.status(204).send();
+  }
 
-    async createMovie(req: Request, res: Response) {
-        const result = await this.movieSchema.validateMovie(req.body);
-
-        if (!result.success) {
-            res.status(400).json({ message: "Invalid movie data", errors: result.error })
-        }
-
-        const newMovie = await this.model.createMovie({ ...req.body })
-        res.status(201).json(newMovie)
+  async updateMovieById(req: Request, res: Response) {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid movie ID" });
     }
-
-    async createGenre(req: Request, res: Response) {
-        const newGenre = await this.model.createGenre({ ...req.body })
-        res.status(201).json(newGenre)
+    const result = await this.movieSchema.validatePartialCreate(req.body);
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
     }
-
-    async deleteGenre(req: Request, res: Response) {
-        const { id } = req.params;
-        const parsedId = Number(id)
-        const response = await this.model.removeGenre({ id: parsedId })
-        res.sendStatus(204)
+    const data = result.data;
+    const movie = await this.moviesService.updateMovieById(
+      id,
+      data as UpdateMovieData,
+    );
+    if (!movie.ok) {
+      return res.status(500).json({ error: movie.error });
     }
-
-    async deleteMovie(req: Request, res: Response) {
-        const { id } = req.params
-        const parsedId = Number(id)
-        const result = await this.model.deleteMovie({ id: parsedId })
-        res.sendStatus(204)
-    }
-
-    async updateMovie(req: Request, res: Response) {
-        const result = await this.movieSchema.validatePartialMovie(req.body)
-        if (!result.success) {
-            res.status(400).json({ message: "invalid movie data", error: result.error })
-        }
-
-        const { id } = req.params
-        const parsedId = Number(id)
-
-        const updatedMovie = await this.model.updateMovie({ ...req.body, id: parsedId })
-        res.json(updatedMovie)
-    }
-
-    //#endregion
-
-    //#region schedules
-
-    async getScheduleStates(req: Request, res: Response) {
-        const states = await this.model.getScheduleStates()
-        res.json(states)
-    }
-
-    async createScheduleState(req: Request, res: Response) {
-        const state = await this.model.createScheduleState({ ...req.body })
-        res.status(201).json(state)
-    }
-
-    async deleteScheduleState(req: Request, res: Response) {
-        const { id } = req.params
-        const parsedId = Number(id)
-        const result = await this.model.deleteScheduleState({ id: parsedId })
-        res.sendStatus(204)
-    }
-
-    async updateScheduleState(req: Request, res: Response) {
-        const { id } = req.params
-        const parsedId = Number(id)
-        const result = await this.model.updateScheduleState({ id: parsedId, ...req.body })
-        res.json(result)
-    }
-
-    async getSchedules(req: Request, res: Response) {
-        const { startDate, endDate, startTime, endTime } = req.query
-        const schedules = await this.model.getSchedules({ startDate: startDate as string, endDate: endDate as string, startTime: startTime as string, endTime: endTime as string })
-        res.json(schedules)
-    }
-
-    async getScheduleById(req: Request, res: Response) {
-        const { id } = req.params;
-        const parsedId = Number(id)
-        const schedule = await this.model.getScheduleById({ id: parsedId })
-        res.json(schedule)
-    }
-
-    async createSchedule(req: Request, res: Response) {
-        const newSchedule = await this.model.createSchedule({ ...req.body })
-        res.status(201).json(newSchedule)
-    }
-
-    async updateSchedule(req: Request, res: Response) {
-        const { id } = req.params
-        const updatedSchedule = await this.model.updateSchedule({ ...req.body, id: Number(id) })
-        res.json(updatedSchedule)
-    }
-
-    //#endregion
-
-    async getReservations(req: Request, res: Response){
-        const reservations = await this.model.getReservations();
-        res.json(reservations)
-    }
-
-    async getReservationById(req: Request, res:Response){
-        const {id} = req.params
-        const reservation = await this.model.getReservationById({id: Number(id)})
-        res.json(reservation)
-    }
+    res.json(movie.data);
+  }
 }

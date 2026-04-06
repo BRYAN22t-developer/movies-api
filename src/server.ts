@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { createMainRouter } from "./routes/main.js";
 import cookieParser from "cookie-parser";
 import type { AuthController, Authenticator } from "./types/auth.types.js";
-import type { MoviesController } from "./controllers/movies.js";
+import type { MoviesController } from "./controllers/oldMovies.js";
 
 export function createServer({
   authenticator,

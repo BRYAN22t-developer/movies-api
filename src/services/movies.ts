@@ -20,6 +20,7 @@ export class DefaultMoviesService implements MoviesService {
   findById(id: number): Promise<ServiceResult<Movie | null>> {
     return this.moviesRepository.findById(id);
   }
+
   createMovie(data: CreateMovieData): Promise<ServiceResult<Movie>> {
     return this.moviesRepository.createMovie(data);
   }

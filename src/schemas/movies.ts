@@ -19,4 +19,41 @@ export class MovieSchema {
   async validatePartialMovie(data: unknown) {
     return this.baseMovieSchema.partial().safeParse(data);
   }
+
+  private filtersSchema = z.object({
+    genresIds: z
+      .array(z.string())
+      .transform((arr) => arr.map(Number))
+      .optional(),
+    search: z.string().optional(),
+    limit: z
+      .string()
+      .transform((val) => parseInt(val))
+      .optional(),
+    offset: z
+      .string()
+      .transform((val) => parseInt(val))
+      .optional(),
+  });
+
+  async validateFilters(data: unknown) {
+    return this.filtersSchema.safeParse(data);
+  }
+
+  async validatePartialFilters(data: unknown) {
+    return this.filtersSchema.partial().safeParse(data);
+  }
+
+  private createMovieSchema = z.object({
+    ...this.baseMovieSchema.omit({ genres: true }).shape,
+    genreIds: z.array(z.number()).min(1, "At least one genre ID is required"),
+  });
+
+  async validateCreate(data: unknown) {
+    return this.createMovieSchema.safeParse(data);
+  }
+
+  async validatePartialCreate(data: unknown) {
+    return this.createMovieSchema.partial().safeParse(data);
+  }
 }

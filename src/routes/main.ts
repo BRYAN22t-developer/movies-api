@@ -2,7 +2,7 @@ import { Router } from "express";
 import { createMoviesRouter } from "./movies.js";
 import { createAuthRouter } from "./auth.js";
 import type { AuthController, Authenticator } from "../types/auth.types.js";
-import type { MoviesController } from "../controllers/movies.js";
+import type { MoviesController } from "../controllers/oldMovies.js";
 
 export function createMainRouter({
   authenticator,

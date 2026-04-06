@@ -72,6 +72,7 @@ export interface GenresService {
   getGenres(): Promise<ServiceResult<Genre[]>>;
   createGenre(data: CreateGenreData): Promise<ServiceResult<Genre>>;
   findGenreById(id: number): Promise<ServiceResult<Genre | null>>;
+  findGenreByIds(ids: number[]): Promise<ServiceResult<Genre[] | null>>;
   findGenreByName(name: string): Promise<ServiceResult<Genre | null>>;
   deleteGenreById(id: number): Promise<ServiceResult<null>>;
   updateGenreById(

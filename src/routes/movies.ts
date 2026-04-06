@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { MoviesController } from "../controllers/movies.js";
+import { MoviesController } from "../controllers/oldMovies.js";
 import type { AuthenticatorContract } from "../types/auth.types.js";
 
 export function createMoviesRouter({
