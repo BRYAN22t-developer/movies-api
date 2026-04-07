@@ -32,6 +32,7 @@ export interface ScheduleRepository {
     id: number,
     data: updateScheduleData,
   ): Promise<ServiceResult<Schedule>>;
+  deleteSchedule(id: number): Promise<ServiceResult<null>>;
 }
 
 export interface ScheduleService {
@@ -42,6 +43,7 @@ export interface ScheduleService {
     id: number,
     data: updateScheduleData,
   ): Promise<ServiceResult<Schedule>>;
+  deleteSchedule(id: number): Promise<ServiceResult<null>>;
 }
 
 export interface ScheduleController {
@@ -49,4 +51,5 @@ export interface ScheduleController {
   getScheduleById(req: Request, res: Response): Promise<void | Response>;
   createSchedule(req: Request, res: Response): Promise<void | Response>;
   updateSchedule(req: Request, res: Response): Promise<void | Response>;
+  deleteSchedule(req: Request, res: Response): Promise<void | Response>;
 }

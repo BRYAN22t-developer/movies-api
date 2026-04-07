@@ -75,6 +75,15 @@ export class MySQLScheduleRepository implements ScheduleRepository {
     return await this.getScheduleById(id);
   }
 
+  async deleteSchedule(id: number): Promise<ServiceResult<null>> {
+    const sql = `DELETE FROM schedules WHERE id = ?`;
+    const [result] = await this.pool.query(sql, [id]);
+    if ((result as ResultSetHeader).affectedRows === 0) {
+      return { ok: false, error: "Schedule not found" };
+    }
+    return { ok: true, data: null };
+  }
+
   private createUpdateScheduleQuery(
     id: number,
     data: updateScheduleData,
