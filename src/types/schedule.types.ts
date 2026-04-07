@@ -12,20 +12,26 @@ export type ScheduleFilterData = {
 };
 
 export type Schedule = {
-  id: number;
-  movieId: number;
-  roomId: number;
-  stateId: number;
   title: string;
-  startTime: string;
-  startDate: string;
+  start_date: string;
+  start_time: string;
+  room: string;
+  state: string;
 };
 
-export type createScheduleData = Omit<Schedule, "id">;
+export type createScheduleData = {
+  movieId: number;
+  roomId: number;
+  startDate: string;
+  startTime: string;
+  stateId: number;
+};
 export type updateScheduleData = Partial<createScheduleData>;
 
 export interface ScheduleRepository {
-  getSchedule(filters?: ScheduleFilterData): Promise<ServiceResult<Schedule[]>>;
+  getSchedules(
+    filters?: ScheduleFilterData,
+  ): Promise<ServiceResult<Schedule[]>>;
   getScheduleById(id: number): Promise<ServiceResult<Schedule>>;
   createSchedule(data: createScheduleData): Promise<ServiceResult<Schedule>>;
   updateSchedule(
@@ -33,10 +39,22 @@ export interface ScheduleRepository {
     data: updateScheduleData,
   ): Promise<ServiceResult<Schedule>>;
   deleteSchedule(id: number): Promise<ServiceResult<null>>;
+
+  getScheduleStates(): Promise<ServiceResult<{ id: number; state: string }[]>>;
+  createScheduleState(
+    state: string,
+  ): Promise<ServiceResult<{ id: number; state: string }>>;
+  deleteScheduleState(id: number): Promise<ServiceResult<null>>;
+  updateScheduleState(
+    id: number,
+    state: string,
+  ): Promise<ServiceResult<{ id: number; state: string }>>;
 }
 
 export interface ScheduleService {
-  getSchedule(filters?: ScheduleFilterData): Promise<ServiceResult<Schedule[]>>;
+  getSchedules(
+    filters?: ScheduleFilterData,
+  ): Promise<ServiceResult<Schedule[]>>;
   getScheduleById(id: number): Promise<ServiceResult<Schedule>>;
   createSchedule(data: createScheduleData): Promise<ServiceResult<Schedule>>;
   updateSchedule(
@@ -44,12 +62,25 @@ export interface ScheduleService {
     data: updateScheduleData,
   ): Promise<ServiceResult<Schedule>>;
   deleteSchedule(id: number): Promise<ServiceResult<null>>;
+  getScheduleStates(): Promise<ServiceResult<{ id: number; state: string }[]>>;
+  createScheduleState(
+    state: string,
+  ): Promise<ServiceResult<{ id: number; state: string }>>;
+  deleteScheduleState(id: number): Promise<ServiceResult<null>>;
+  updateScheduleState(
+    id: number,
+    state: string,
+  ): Promise<ServiceResult<{ id: number; state: string }>>;
 }
 
 export interface ScheduleController {
-  getSchedule(req: Request, res: Response): Promise<void | Response>;
+  getSchedules(req: Request, res: Response): Promise<void | Response>;
   getScheduleById(req: Request, res: Response): Promise<void | Response>;
   createSchedule(req: Request, res: Response): Promise<void | Response>;
   updateSchedule(req: Request, res: Response): Promise<void | Response>;
   deleteSchedule(req: Request, res: Response): Promise<void | Response>;
+  getScheduleStates(req: Request, res: Response): Promise<void | Response>;
+  createScheduleState(req: Request, res: Response): Promise<void | Response>;
+  deleteScheduleState(req: Request, res: Response): Promise<void | Response>;
+  updateScheduleState(req: Request, res: Response): Promise<void | Response>;
 }

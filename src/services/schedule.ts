@@ -14,11 +14,30 @@ export class DefaultScheduleService implements ScheduleService {
   constructor(scheduleRepository: ScheduleRepository) {
     this.scheduleRepository = scheduleRepository;
   }
+  async getScheduleStates(): Promise<
+    ServiceResult<{ id: number; state: string }[]>
+  > {
+    return await this.scheduleRepository.getScheduleStates();
+  }
+  async createScheduleState(
+    state: string,
+  ): Promise<ServiceResult<{ id: number; state: string }>> {
+    return await this.scheduleRepository.createScheduleState(state);
+  }
+  async deleteScheduleState(id: number): Promise<ServiceResult<null>> {
+    return await this.scheduleRepository.deleteScheduleState(id);
+  }
+  async updateScheduleState(
+    id: number,
+    state: string,
+  ): Promise<ServiceResult<{ id: number; state: string }>> {
+    return await this.scheduleRepository.updateScheduleState(id, state);
+  }
 
-  async getSchedule(
+  async getSchedules(
     filters?: ScheduleFilterData,
   ): Promise<ServiceResult<Schedule[]>> {
-    return await this.scheduleRepository.getSchedule(filters);
+    return await this.scheduleRepository.getSchedules(filters);
   }
 
   async getScheduleById(id: number): Promise<ServiceResult<Schedule>> {

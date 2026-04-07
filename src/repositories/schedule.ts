@@ -10,13 +10,11 @@ import type {
 } from "../types/schedule.types.js";
 
 type ScheduleRow = RowDataPacket & {
-  id: number;
-  movieId: number;
-  roomId: number;
-  stateId: number;
   title: string;
-  startTime: Date;
-  endTime: Date;
+  start_date: string;
+  start_time: string;
+  room: string;
+  state: string;
 };
 
 export class MySQLScheduleRepository implements ScheduleRepository {
@@ -26,19 +24,67 @@ export class MySQLScheduleRepository implements ScheduleRepository {
     if (!DATABASE_URL) throw new Error("DATABASE_URL is not defined");
     this.pool = mysql.createPool(DATABASE_URL);
   }
+  async getScheduleStates(): Promise<
+    ServiceResult<{ id: number; state: string }[]>
+  > {
+    const sql = `SELECT id, state FROM schedules_states`;
+    const [rows] = await this.pool.query(sql);
+    const states = (rows as RowDataPacket[]).map((row) => ({
+      id: row.id,
+      state: row.state,
+    }));
+    return { ok: true, data: states };
+  }
+  async createScheduleState(
+    state: string,
+  ): Promise<ServiceResult<{ id: number; state: string }>> {
+    const sql = `INSERT INTO schedules_states (state) VALUES (?)`;
+    const [result] = await this.pool.query(sql, [state]);
+    const insertId = (result as ResultSetHeader).insertId;
+    return {
+      ok: true,
+      data: { id: insertId, state },
+    };
+  }
+  async deleteScheduleState(id: number): Promise<ServiceResult<null>> {
+    const sql = `DELETE FROM schedules_states WHERE id = ?`;
+    const [result] = await this.pool.query(sql, [id]);
+    if ((result as ResultSetHeader).affectedRows === 0) {
+      return { ok: false, error: "Schedule state not found" };
+    }
+    return { ok: true, data: null };
+  }
+  async updateScheduleState(
+    id: number,
+    state: string,
+  ): Promise<ServiceResult<{ id: number; state: string }>> {
+    const sql = `UPDATE schedules_states SET state = ? WHERE id = ?`;
+    const [result] = await this.pool.query(sql, [state, id]);
+    if ((result as ResultSetHeader).affectedRows === 0) {
+      return { ok: false, error: "Schedule state not found" };
+    }
+    return { ok: true, data: { id, state } };
+  }
 
-  async getSchedule(
+  async getSchedules(
     filters?: ScheduleFilterData,
   ): Promise<ServiceResult<Schedule[]>> {
     const sql = this.getScheduleQuery(filters);
-    const [rows] = await this.pool.query(sql);
+    const values: unknown[] = [];
+    if (filters?.startDate) values.push(filters.startDate);
+    if (filters?.endDate) values.push(filters.endDate);
+    if (filters?.startTime) values.push(filters.startTime);
+    if (filters?.endTime) values.push(filters.endTime);
+    const [rows] = await this.pool.query(sql, values);
     return { ok: true, data: rows as Schedule[] };
   }
 
   async getScheduleById(id: number): Promise<ServiceResult<Schedule>> {
-    const sql = `SELECT s.id, s.movie_id AS movieId, s.room_id AS roomId, s.state_id AS stateId, m.title, s.start_time AS startTime, s.end_time AS endTime
+    const sql = `SELECT m.title, s.start_date, s.start_time, r.room, st.state
         FROM schedules s
         JOIN movies m ON m.id = s.movie_id
+        JOIN rooms r ON r.id = s.room_id
+        JOIN schedules_states st ON st.id = s.state_id
         WHERE s.id = ?
         `;
     const [rows] = await this.pool.query<ScheduleRow[]>(sql, [id]);
@@ -46,11 +92,7 @@ export class MySQLScheduleRepository implements ScheduleRepository {
       return { ok: false, error: "Schedule not found" };
     }
 
-    if (!rows[0]) {
-      return { ok: false, error: "Schedule not found" };
-    }
-
-    return { ok: true, data: this.parseSchedule(rows[0]) };
+    return { ok: true, data: rows[0] as Schedule };
   }
 
   async createSchedule(
@@ -144,41 +186,41 @@ export class MySQLScheduleRepository implements ScheduleRepository {
     };
   }
 
-  private getScheduleQuery(filters?: ScheduleFilterData): {
-    sql: string;
-    values: unknown[];
-  } {
-    let sql = `SELECT s.id, s.movie_id AS movieId, s.room_id AS roomId, s.state_id AS stateId, m.title, s.start_time AS startTime, s.end_time AS endTime
-        FROM schedules s
-        JOIN movies m ON m.id = s.movie_id`;
+  private getScheduleQuery(filters?: ScheduleFilterData): string {
+    let query = `
+            SELECT 
+                m.title,
+                s.start_date,
+                s.start_time,
+                r.room,
+                st.state
+            FROM schedules s
+            JOIN movies m ON m.id = s.movie_id
+            JOIN rooms r ON r.id = s.room_id
+            JOIN schedules_states st ON st.id = s.state_id
+        `;
+    const whereClauses: string[] = [];
 
-    const conditions: string[] = [];
     if (filters?.startDate) {
-      conditions.push("s.start_time >= ?");
+      whereClauses.push("s.start_date >= ?");
     }
+
     if (filters?.endDate) {
-      conditions.push("s.end_time <= ?");
+      whereClauses.push("s.start_date <= ?");
     }
 
-    if (conditions.length > 0) {
-      sql += " WHERE " + conditions.join(" AND ");
+    if (filters?.startTime) {
+      whereClauses.push("s.start_time >= ?");
     }
 
-    return {
-      sql,
-      values: [filters?.startDate, filters?.endDate].filter(Boolean),
-    };
-  }
+    if (filters?.endTime) {
+      whereClauses.push("s.start_time <= ?");
+    }
 
-  private parseSchedule(row: ScheduleRow): Schedule {
-    return {
-      id: row.id,
-      movieId: row.movieId,
-      roomId: row.roomId,
-      stateId: row.stateId,
-      title: row.title,
-      startTime: row.startTime.toISOString(),
-      startDate: row.startDate.toISOString(),
-    };
+    query +=
+      whereClauses.length > 0 ? ` WHERE ${whereClauses.join(" AND ")}` : "";
+    query += " ORDER BY s.start_date ASC";
+
+    return query;
   }
 }
