@@ -1,15 +1,51 @@
 import { Router } from "express";
 import type { Authenticator } from "../types/auth.types.js";
 import type { ScheduleController } from "../types/schedule.types.js";
+import type { ReservationController } from "../types/reservation.types.js";
 
 export function createSchedulesRouter({
   authenticator,
   scheduleController,
+  reservationController,
 }: {
   authenticator: Authenticator;
   scheduleController: ScheduleController;
+  reservationController: ReservationController;
 }): Router {
   const router = Router();
+
+  //#region Reservation routes
+
+  router.get(
+    "/reservations",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:read"),
+    (req, res) => {
+      reservationController.getReservations(req, res);
+    },
+  );
+
+  router.get(
+    "/reservations/:id",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:read"),
+    (req, res) => {
+      reservationController.getReservationById(req, res);
+    },
+  );
+
+  router.post(
+    "/reservations",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:create"),
+    (req, res) => {
+      reservationController.createReservation(req, res);
+    },
+  );
+
+  //#endregion
+
+  //#region Schedule state routes
 
   router.get(
     "/states",
@@ -47,6 +83,10 @@ export function createSchedulesRouter({
     },
   );
 
+  //#endregion
+
+  //#region Schedule routes
+
   router.get(
     "/",
     (req, res, next) =>
@@ -82,6 +122,8 @@ export function createSchedulesRouter({
       scheduleController.updateSchedule(req, res);
     },
   );
+
+  //#endregion
 
   return router;
 }

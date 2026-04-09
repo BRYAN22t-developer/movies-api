@@ -6,19 +6,20 @@ import type { MoviesController as oldMoviesController } from "../controllers/old
 import type { MoviesController } from "../types/movies.types.js";
 import { createSchedulesRouter } from "./schedules.js";
 import type { ScheduleController } from "../types/schedule.types.js";
+import type { ReservationController } from "../types/reservation.types.js";
 
 export function createMainRouter({
   authenticator,
   authController,
-  oldMoviesController,
   moviesController,
   scheduleController,
+  reservationController,
 }: {
   authenticator: Authenticator;
   authController: AuthController;
-  oldMoviesController: oldMoviesController;
   moviesController: MoviesController;
   scheduleController: ScheduleController;
+  reservationController: ReservationController;
 }): Router {
   const router = Router();
 
@@ -34,14 +35,17 @@ export function createMainRouter({
     "/movies",
     createMoviesRouter({
       authenticator,
-      oldMoviesController,
       moviesController,
     }),
   );
 
   router.use(
     "/schedules",
-    createSchedulesRouter({ authenticator, scheduleController }),
+    createSchedulesRouter({
+      authenticator,
+      scheduleController,
+      reservationController,
+    }),
   );
 
   return router;

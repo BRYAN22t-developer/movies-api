@@ -19,6 +19,9 @@ import { DefaultScheduleController } from "./controllers/schedule.js";
 import { MySQLScheduleRepository } from "./repositories/schedule.js";
 import { DefaultScheduleService } from "./services/schedule.js";
 import { ScheduleSchema } from "./schemas/schedule.js";
+import { MySQLReservationRepository } from "./repositories/reservation.js";
+import { DefaultReservationController } from "./controllers/reservation.js";
+import { DefaultReservationService } from "./services/reservation.js";
 
 //#region Dependency Injection
 
@@ -29,7 +32,6 @@ const authenticator = new Authenticator(authService, UNAUTHENTICATED_ENDPOINTS);
 
 const genresRepository = new MySQLGenresRepository();
 const genresService = new DefaultGenresService(genresRepository);
-const moviesModel = new MySQLModel();
 const moviesRepository = new MySQLMoviesRepository();
 const moviesService = new DefaultMoviesService(moviesRepository);
 const movieSchema = new MovieSchema();
@@ -38,7 +40,6 @@ const moviesController = new DefaultMoviesController({
   movieSchema,
   genresService,
 });
-const oldMoviesController = new OldMoviesController(moviesModel);
 
 const scheduleSchema = new ScheduleSchema();
 const scheduleRepository = new MySQLScheduleRepository();
@@ -49,6 +50,12 @@ const scheduleController = new DefaultScheduleController(
   moviesService,
 );
 
+const reservationRepository = new MySQLReservationRepository();
+const reservationService = new DefaultReservationService(reservationRepository);
+const reservationController = new DefaultReservationController(
+  reservationService,
+);
+
 //#endregion
 
 const port = Number(process.env.PORT) || 3000;
@@ -56,9 +63,9 @@ const port = Number(process.env.PORT) || 3000;
 createServer({
   authenticator,
   authController,
-  oldMoviesController,
   moviesController,
   scheduleController,
+  reservationController,
 }).listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

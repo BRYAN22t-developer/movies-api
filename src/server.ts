@@ -6,19 +6,20 @@ import type { AuthController, Authenticator } from "./types/auth.types.js";
 import type { MoviesController as oldMoviesController } from "./controllers/oldMovies.js";
 import type { MoviesController } from "./types/movies.types.js";
 import type { ScheduleController } from "./types/schedule.types.js";
+import type { ReservationController } from "./types/reservation.types.js";
 
 export function createServer({
   authenticator,
   authController,
-  oldMoviesController,
   moviesController,
   scheduleController,
+  reservationController,
 }: {
   authenticator: Authenticator;
   authController: AuthController;
-  oldMoviesController: oldMoviesController;
   moviesController: MoviesController;
   scheduleController: ScheduleController;
+  reservationController: ReservationController;
 }): Express {
   const app = express();
   app.disable("x-powered-by");
@@ -30,9 +31,9 @@ export function createServer({
     createMainRouter({
       authenticator,
       authController,
-      oldMoviesController,
       moviesController,
       scheduleController,
+      reservationController,
     }),
   );
 

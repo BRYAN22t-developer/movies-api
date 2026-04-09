@@ -1,38 +1,15 @@
 import { Router } from "express";
-import { MoviesController as oldMoviesController } from "../controllers/oldMovies.js";
 import type { Authenticator } from "../types/auth.types.js";
 import type { MoviesController } from "../types/movies.types.js";
 
 export function createMoviesRouter({
   authenticator,
-  oldMoviesController,
   moviesController,
 }: {
   authenticator: Authenticator;
-  oldMoviesController: oldMoviesController;
   moviesController: MoviesController;
 }): Router {
   const router = Router();
-
-  router.get(
-    "/reservations",
-    (req, res, next) =>
-      authenticator.authorization(req, res, next, "reservations:read"),
-    (req, res) => {
-      oldMoviesController.getReservations(req, res);
-    },
-  );
-
-  router.get(
-    "/reservations/:id",
-    (req, res, next) =>
-      authenticator.authorization(req, res, next, "reservations:read"),
-    (req, res) => {
-      oldMoviesController.getReservationById(req, res);
-    },
-  );
-
-  //#region movies genres
 
   router.get(
     "/",
@@ -105,8 +82,6 @@ export function createMoviesRouter({
       moviesController.updateMovieById(req, res);
     },
   );
-
-  //#endregion
 
   return router;
 }
