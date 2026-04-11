@@ -35,7 +35,7 @@ export function createSchedulesRouter({
   );
 
   router.post(
-    "/reservations",
+    "/:id/reservations",
     (req, res, next) =>
       authenticator.authorization(req, res, next, "reservations:create"),
     (req, res) => {

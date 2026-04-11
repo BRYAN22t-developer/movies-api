@@ -2,7 +2,6 @@ import { Router } from "express";
 import { createMoviesRouter } from "./movies.js";
 import { createAuthRouter } from "./auth.js";
 import type { AuthController, Authenticator } from "../types/auth.types.js";
-import type { MoviesController as oldMoviesController } from "../controllers/oldMovies.js";
 import type { MoviesController } from "../types/movies.types.js";
 import { createSchedulesRouter } from "./schedules.js";
 import type { ScheduleController } from "../types/schedule.types.js";

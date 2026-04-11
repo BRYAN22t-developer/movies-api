@@ -49,6 +49,7 @@ export class MySQLReservationRepository implements ReservationRepository {
   async createReservation(
     data: CreateReservationData,
   ): Promise<ServiceResult<Reservation>> {
+    console.log("Creating reservation with data:", data);
     const sql = `INSERT INTO reservations (schedule_id, user_id, seat_id, state_id) VALUES (?, ?, ?, ?)`;
     const [result] = await this.pool.execute(sql, [
       data.scheduleId,

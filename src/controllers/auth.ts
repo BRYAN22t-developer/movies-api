@@ -38,14 +38,14 @@ export class HttpAuthController implements AuthController {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "30m",
+        expiresIn: "24h",
       },
     );
 
     res.cookie("authToken", authToken, {
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 30 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000,
     });
     res.json(result);
   }

@@ -7,7 +7,6 @@ import { DefaultAuthService } from "./services/auth.js";
 import { HttpAuthController } from "./controllers/auth.js";
 import { Auth as Authenticator } from "./middlewares/auth.js";
 import { MySQLModel } from "./models/mysql/main.js";
-import { MoviesController as OldMoviesController } from "./controllers/oldMovies.js";
 import { UNAUTHENTICATED_ENDPOINTS } from "./constants/unauthenticated-endpoints.js";
 import { DefaultMoviesController } from "./controllers/movies.js";
 import { DefaultMoviesService } from "./services/movies.js";
