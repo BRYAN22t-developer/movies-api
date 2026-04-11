@@ -43,6 +43,15 @@ export function createSchedulesRouter({
     },
   );
 
+  router.patch(
+    "/reservations/:id",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:update"),
+    (req, res) => {
+      reservationController.updateReservation(req, res);
+    },
+  );
+
   //#endregion
 
   //#region Schedule state routes

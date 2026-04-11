@@ -21,7 +21,9 @@ export type CreateReservationData = {
   stateId: number;
 };
 
-export type updateReservationData = Partial<CreateReservationData>;
+export type updateReservationData = {
+  [K in keyof CreateReservationData]?: CreateReservationData[K] | undefined;
+};
 
 export interface ReservationRepository {
   getReservations(): Promise<ServiceResult<Reservation[]>>;

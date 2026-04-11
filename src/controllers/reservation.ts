@@ -71,7 +71,22 @@ export class DefaultReservationController implements ReservationController {
     req: Request,
     res: Response,
   ): Promise<void | Response> {
-    throw new Error("Method not implemented.");
+    const scheduleId = req.params.id;
+    const userId = (req.user as Express.UserPayload).id;
+    const { seatId, stateId } = req.body;
+    const serviceResult = await this.reservationService.updateReservation(
+      Number(scheduleId),
+      {
+        userId: Number(userId),
+        seatId: seatId ? Number(seatId) : undefined,
+        stateId: stateId ? Number(stateId) : undefined,
+      },
+    );
+    if (serviceResult.ok) {
+      return res.json(serviceResult.data);
+    } else {
+      return res.status(400).json({ error: serviceResult.error });
+    }
   }
 
   async deleteReservation(
