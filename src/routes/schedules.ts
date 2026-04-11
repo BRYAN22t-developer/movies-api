@@ -26,6 +26,15 @@ export function createSchedulesRouter({
   );
 
   router.get(
+    "/:id/reservations",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:read"),
+    (req, res) => {
+      reservationController.getReservationsByScheduleId(req, res);
+    },
+  );
+
+  router.get(
     "/reservations/:id",
     (req, res, next) =>
       authenticator.authorization(req, res, next, "reservations:read"),

@@ -10,6 +10,21 @@ export class DefaultReservationController implements ReservationController {
     this.reservationService = reservationService;
   }
 
+  async getReservationsByScheduleId(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response> {
+    const scheduleId = Number(req.params.id);
+    const serviceResult = await this.reservationService.getReservations({
+      scheduleId,
+    });
+    if (serviceResult.ok) {
+      return res.json(serviceResult.data);
+    } else {
+      return res.status(500).json({ error: serviceResult.error });
+    }
+  }
+
   async getReservationStateById(
     req: Request,
     res: Response,

@@ -3,6 +3,7 @@ import type { Pool, RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import type {
   CreateReservationData,
   Reservation,
+  ReservationFiltersData,
   ReservationRepository,
   ServiceResult,
   updateReservationData,
@@ -31,14 +32,20 @@ export class MySQLReservationRepository implements ReservationRepository {
     this.pool = mysql.createPool(DATABASE_URL);
   }
 
-  async getReservations(): Promise<ServiceResult<Reservation[]>> {
-    const sql = this.getReservationQuery();
-    const [rows] = await this.pool.query<ReservationRow[]>(sql);
+  async getReservations(
+    filters?: ReservationFiltersData,
+  ): Promise<ServiceResult<Reservation[]>> {
+    const query = this.getReservationQuery(filters);
+    const [rows] = await this.pool.query<ReservationRow[]>(
+      query.sql,
+      query.values,
+    );
     return { ok: true, data: rows };
   }
 
   async getReservationById(id: number): Promise<ServiceResult<Reservation>> {
-    const sql = this.getReservationQuery() + " WHERE r.id = ?";
+    const query = this.getReservationQuery();
+    const sql = query.sql + " WHERE r.id = ?";
     const [rows] = await this.pool.query<ReservationRow[]>(sql, [id]);
     if (rows.length === 0) {
       return { ok: false, error: "Reservation not found" };
@@ -183,22 +190,65 @@ export class MySQLReservationRepository implements ReservationRepository {
     return { ok: true, data: { sql, values } };
   }
 
-  private getReservationQuery() {
-    const sql = `SELECT r.id, 
+  private getReservationQuery(filters?: ReservationFiltersData) {
+    let sql = `SELECT r.id, 
             sc.start_time AS startTime, 
             sc.start_date AS startDate, 
             rm.room AS room, 
             m.title AS movieTitle, 
-            rs.state, 
-            u.username AS user, 
-            concat(s.number, current_row) AS seat
-                    FROM reservations r
+            rs.state AS state, 
+            u.username AS username, 
+            s.number AS seatNumber
+            FROM reservations r
                     JOIN schedules sc ON sc.id = r.schedule_id
                     JOIN rooms rm ON rm.id = sc.room_id
                     JOIN movies m ON m.id = sc.movie_id
                     JOIN reservation_states rs ON rs.id = r.state_id
                     JOIN users u ON u.id = r.user_id
                     JOIN seats s ON s.id = r.seat_id`;
-    return sql;
+
+    const conditions: string[] = [];
+    const values: unknown[] = [];
+
+    if (filters?.startDate) {
+      conditions.push("sc.start_date >= ?");
+      values.push(filters.startDate);
+    }
+
+    if (filters?.endDate) {
+      conditions.push("sc.start_date <= ?");
+      values.push(filters.endDate);
+    }
+
+    if (filters?.movieTitle) {
+      conditions.push("m.title LIKE ?");
+      values.push(`%${filters.movieTitle}%`);
+    }
+
+    if (filters?.room) {
+      conditions.push("rm.room LIKE ?");
+      values.push(`%${filters.room}%`);
+    }
+
+    if (filters?.state) {
+      conditions.push("rs.state LIKE ?");
+      values.push(`%${filters.state}%`);
+    }
+
+    if (filters?.user) {
+      conditions.push("u.username LIKE ?");
+      values.push(`%${filters.user}%`);
+    }
+
+    if (filters?.scheduleId) {
+      conditions.push("sc.id = ?");
+      values.push(filters.scheduleId);
+    }
+
+    if (conditions.length > 0) {
+      sql += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
+    return { sql, values };
   }
 }

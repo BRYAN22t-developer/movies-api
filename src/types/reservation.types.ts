@@ -25,8 +25,20 @@ export type updateReservationData = {
   [K in keyof CreateReservationData]?: CreateReservationData[K] | undefined;
 };
 
+export type ReservationFiltersData = {
+  startDate?: string;
+  endDate?: string;
+  movieTitle?: string;
+  room?: string;
+  state?: string;
+  user?: string;
+  scheduleId?: number;
+};
+
 export interface ReservationRepository {
-  getReservations(): Promise<ServiceResult<Reservation[]>>;
+  getReservations(
+    filters?: ReservationFiltersData,
+  ): Promise<ServiceResult<Reservation[]>>;
   getReservationById(id: number): Promise<ServiceResult<Reservation>>;
   createReservation(
     data: CreateReservationData,
@@ -53,7 +65,9 @@ export interface ReservationRepository {
 }
 
 export interface ReservationService {
-  getReservations(): Promise<ServiceResult<Reservation[]>>;
+  getReservations(
+    filters?: ReservationFiltersData,
+  ): Promise<ServiceResult<Reservation[]>>;
   getReservationById(id: number): Promise<ServiceResult<Reservation>>;
   createReservation(
     data: CreateReservationData,
@@ -90,6 +104,10 @@ export interface ReservationController {
   deleteReservationState(req: Request, res: Response): Promise<void | Response>;
   updateReservationState(req: Request, res: Response): Promise<void | Response>;
   getReservationStateById(
+    req: Request,
+    res: Response,
+  ): Promise<void | Response>;
+  getReservationsByScheduleId(
     req: Request,
     res: Response,
   ): Promise<void | Response>;

@@ -1,6 +1,7 @@
 import type {
   CreateReservationData,
   Reservation,
+  ReservationFiltersData,
   ReservationRepository,
   ReservationService,
   ServiceResult,
@@ -18,8 +19,10 @@ export class DefaultReservationService implements ReservationService {
     return await this.repository.getReservationStateById(id);
   }
 
-  async getReservations(): Promise<ServiceResult<Reservation[]>> {
-    return await this.repository.getReservations();
+  async getReservations(
+    filters?: ReservationFiltersData,
+  ): Promise<ServiceResult<Reservation[]>> {
+    return await this.repository.getReservations(filters);
   }
 
   async getReservationById(id: number): Promise<ServiceResult<Reservation>> {
