@@ -52,6 +52,15 @@ export function createSchedulesRouter({
     },
   );
 
+  router.delete(
+    "/reservations/:id",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:delete"),
+    (req, res) => {
+      reservationController.deleteReservation(req, res);
+    },
+  );
+
   //#endregion
 
   //#region Schedule state routes

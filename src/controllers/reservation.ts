@@ -93,7 +93,14 @@ export class DefaultReservationController implements ReservationController {
     req: Request,
     res: Response,
   ): Promise<void | Response> {
-    throw new Error("Method not implemented.");
+    const serviceResult = await this.reservationService.deleteReservation(
+      Number(req.params.id),
+    );
+    if (serviceResult.ok) {
+      return res.json({ message: "Reservation deleted successfully" });
+    } else {
+      return res.status(404).json({ error: serviceResult.error });
+    }
   }
 
   async getReservationStates(
