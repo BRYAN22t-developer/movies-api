@@ -40,7 +40,9 @@ export class DefaultReservationController implements ReservationController {
   }
 
   async getReservations(req: Request, res: Response): Promise<void | Response> {
-    const serviceResult = await this.reservationService.getReservations();
+    const serviceResult = await this.reservationService.getReservations({
+      ...req.query,
+    });
     if (serviceResult.ok) {
       return res.json(serviceResult.data);
     } else {
@@ -122,27 +124,54 @@ export class DefaultReservationController implements ReservationController {
     req: Request,
     res: Response,
   ): Promise<void | Response> {
-    throw new Error("Method not implemented.");
+    const serviceResult = await this.reservationService.getReservationStates();
+    if (serviceResult.ok) {
+      return res.json(serviceResult.data);
+    } else {
+      return res.status(500).json({ error: serviceResult.error });
+    }
   }
 
   async createReservationState(
     req: Request,
     res: Response,
   ): Promise<void | Response> {
-    throw new Error("Method not implemented.");
+    const serviceResult = await this.reservationService.createReservationState(
+      req.body.state,
+    );
+    if (serviceResult.ok) {
+      return res.status(201).json(serviceResult.data);
+    } else {
+      return res.status(400).json({ error: serviceResult.error });
+    }
   }
 
   async deleteReservationState(
     req: Request,
     res: Response,
   ): Promise<void | Response> {
-    throw new Error("Method not implemented.");
+    const serviceResult = await this.reservationService.deleteReservationState(
+      Number(req.params.id),
+    );
+    if (serviceResult.ok) {
+      return res.json({ message: "Reservation state deleted successfully" });
+    } else {
+      return res.status(404).json({ error: serviceResult.error });
+    }
   }
 
   async updateReservationState(
     req: Request,
     res: Response,
   ): Promise<void | Response> {
-    throw new Error("Method not implemented.");
+    const serviceResult = await this.reservationService.updateReservationState(
+      Number(req.params.id),
+      req.body.state,
+    );
+    if (serviceResult.ok) {
+      return res.json(serviceResult.data);
+    } else {
+      return res.status(400).json({ error: serviceResult.error });
+    }
   }
 }

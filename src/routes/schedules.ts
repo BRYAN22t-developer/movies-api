@@ -17,6 +17,51 @@ export function createSchedulesRouter({
   //#region Reservation routes
 
   router.get(
+    "/reservations/states",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:read"),
+    (req, res) => {
+      reservationController.getReservationStates(req, res);
+    },
+  );
+
+  router.get(
+    "/reservations/states/:id",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:read"),
+    (req, res) => {
+      reservationController.getReservationStateById(req, res);
+    },
+  );
+
+  router.post(
+    "/reservations/states",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:create"),
+    (req, res) => {
+      reservationController.createReservationState(req, res);
+    },
+  );
+
+  router.delete(
+    "/reservations/states/:id",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:delete"),
+    (req, res) => {
+      reservationController.deleteReservationState(req, res);
+    },
+  );
+
+  router.patch(
+    "/reservations/states/:id",
+    (req, res, next) =>
+      authenticator.authorization(req, res, next, "reservations:update"),
+    (req, res) => {
+      reservationController.updateReservationState(req, res);
+    },
+  );
+
+  router.get(
     "/reservations",
     (req, res, next) =>
       authenticator.authorization(req, res, next, "reservations:read"),
