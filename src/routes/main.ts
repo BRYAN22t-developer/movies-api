@@ -6,6 +6,8 @@ import type { MoviesController } from "../types/movies.types.js";
 import { createSchedulesRouter } from "./schedules.js";
 import type { ScheduleController } from "../types/schedule.types.js";
 import type { ReservationController } from "../types/reservation.types.js";
+import { createRoomRouter } from "./room.js";
+import type { RoomController } from "../types/rooms.types.js";
 
 export function createMainRouter({
   authenticator,
@@ -13,12 +15,14 @@ export function createMainRouter({
   moviesController,
   scheduleController,
   reservationController,
+  roomController,
 }: {
   authenticator: Authenticator;
   authController: AuthController;
   moviesController: MoviesController;
   scheduleController: ScheduleController;
   reservationController: ReservationController;
+  roomController: RoomController;
 }): Router {
   const router = Router();
 
@@ -46,6 +50,8 @@ export function createMainRouter({
       reservationController,
     }),
   );
+
+  router.use("/rooms", createRoomRouter({ roomController, authenticator }));
 
   return router;
 }

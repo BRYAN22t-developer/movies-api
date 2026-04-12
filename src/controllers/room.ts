@@ -10,16 +10,16 @@ export class DefaultRoomController implements RoomController {
 
   async getRooms(req: Request, res: Response): Promise<void | Response> {
     const includeSeats = req.query.includeSeats === "true";
-    const result_1 = await this.roomService.getRooms({ includeSeats });
-    if (result_1.ok) {
-      res.json(result_1.data);
+    const result = await this.roomService.getRooms({ includeSeats });
+    if (result.ok) {
+      res.json(result.data);
     } else {
-      res.status(500).json({ error: result_1.error });
+      res.status(500).json({ error: result.error });
     }
   }
 
   async getRoomById(req: Request, res: Response): Promise<void | Response> {
-    const roomId = Number(req.params.roomId);
+    const roomId = Number(req.params.id);
     const result = await this.roomService.getRoomById(roomId);
     if (result.ok) {
       res.json(result.data);
@@ -39,17 +39,17 @@ export class DefaultRoomController implements RoomController {
   }
 
   async deleteRoom(req: Request, res: Response): Promise<void | Response> {
-    const roomId = Number(req.params.roomId);
+    const roomId = Number(req.params.id);
     const result = await this.roomService.deleteRoom(roomId);
     if (result.ok) {
-      res.status(200).json(result.data);
+      res.status(200).json({ message: "Room deleted successfully" });
     } else {
       res.status(500).json({ error: result.error });
     }
   }
 
   async updateRoom(req: Request, res: Response): Promise<void | Response> {
-    const roomId = Number(req.params.roomId);
+    const roomId = Number(req.params.id);
     const { name } = req.body;
     const result = await this.roomService.updateRoom(roomId, name);
     if (result.ok) {
@@ -70,8 +70,8 @@ export class DefaultRoomController implements RoomController {
   }
 
   async getSeatById(req: Request, res: Response): Promise<void | Response> {
-    const seatId = Number(req.params.seatId);
-    const result = await this.roomService.getSeatById(seatId);
+    const id = Number(req.params.id);
+    const result = await this.roomService.getSeatById(id);
     if (result.ok) {
       res.json(result.data);
     } else {
@@ -80,8 +80,13 @@ export class DefaultRoomController implements RoomController {
   }
 
   async createSeat(req: Request, res: Response): Promise<void | Response> {
-    const data = req.body;
-    const result = await this.roomService.createSeat(data);
+    const roomId = Number(req.params.id);
+    const { row, column } = req.body;
+    const result = await this.roomService.createSeat({
+      roomId,
+      row,
+      column: Number(column),
+    });
     if (result.ok) {
       res.status(201).json(result.data);
     } else {
@@ -93,16 +98,16 @@ export class DefaultRoomController implements RoomController {
     const seatId = Number(req.params.seatId);
     const result = await this.roomService.deleteSeat(seatId);
     if (result.ok) {
-      res.status(200).json(result.data);
+      res.status(200).json({ message: "Seat deleted successfully" });
     } else {
       res.status(500).json({ error: result.error });
     }
   }
 
   async updateSeat(req: Request, res: Response): Promise<void | Response> {
-    const seatId = Number(req.params.seatId);
+    const id = Number(req.params.id);
     const data = req.body;
-    const result = await this.roomService.updateSeat(seatId, data);
+    const result = await this.roomService.updateSeat(id, data);
     if (result.ok) {
       res.json(result.data);
     } else {

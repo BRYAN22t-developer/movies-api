@@ -21,6 +21,9 @@ import { MySQLReservationRepository } from "./repositories/reservation.js";
 import { DefaultReservationController } from "./controllers/reservation.js";
 import { DefaultReservationService } from "./services/reservation.js";
 import { getPool } from "./db/mysql.js";
+import { DefaultRoomController } from "./controllers/room.js";
+import { MySQLRoomRepository } from "./repositories/room.js";
+import { DefaultRoomService } from "./services/room.js";
 
 //#region Dependency Injection
 
@@ -57,6 +60,10 @@ const reservationController = new DefaultReservationController(
   reservationService,
 );
 
+const roomRepository = new MySQLRoomRepository(pool);
+const roomService = new DefaultRoomService(roomRepository);
+const roomController = new DefaultRoomController(roomService);
+
 //#endregion
 
 const port = env.PORT;
@@ -67,6 +74,7 @@ createServer({
   moviesController,
   scheduleController,
   reservationController,
+  roomController,
 }).listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

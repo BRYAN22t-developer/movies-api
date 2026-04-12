@@ -21,42 +21,42 @@ export class DefaultRoomService implements RoomService {
     return await this.roomRepository.getRooms(filters);
   }
 
-  async getRoomById(roomId: number): Promise<ServiceResult<Room>> {
-    return await this.roomRepository.getRoomById(roomId);
+  async getRoomById(id: number): Promise<ServiceResult<Room>> {
+    return await this.roomRepository.getRoomById(id);
   }
 
   async createRoom(name: string): Promise<ServiceResult<Room>> {
     return await this.roomRepository.createRoom(name);
   }
 
-  async deleteRoom(roomId: number): Promise<ServiceResult<null>> {
-    return await this.roomRepository.deleteRoom(roomId);
+  async deleteRoom(id: number): Promise<ServiceResult<null>> {
+    return await this.roomRepository.deleteRoom(id);
   }
 
-  async updateRoom(roomId: number, name: string): Promise<ServiceResult<Room>> {
-    return await this.roomRepository.updateRoom(roomId, name);
+  async updateRoom(id: number, name: string): Promise<ServiceResult<Room>> {
+    return await this.roomRepository.updateRoom(id, name);
   }
 
   async getSeats(filters?: GetSeatsFilters): Promise<ServiceResult<Seat[]>> {
     return await this.roomRepository.getSeats(filters);
   }
 
-  async getSeatById(seatId: number): Promise<ServiceResult<Seat>> {
-    return await this.roomRepository.getSeatById(seatId);
+  async getSeatById(id: number): Promise<ServiceResult<Seat>> {
+    return await this.roomRepository.getSeatById(id);
   }
 
   async createSeat(data: CreateSeatData): Promise<ServiceResult<Seat>> {
     return await this.roomRepository.createSeat(data);
   }
 
-  async deleteSeat(seatId: number): Promise<ServiceResult<null>> {
-    return await this.roomRepository.deleteSeat(seatId);
+  async deleteSeat(id: number): Promise<ServiceResult<null>> {
+    return await this.roomRepository.deleteSeat(id);
   }
 
   async updateSeat(
-    seatId: number,
+    id: number,
     data: UpdateSeatData,
   ): Promise<ServiceResult<Seat>> {
-    return await this.roomRepository.updateSeat(seatId, data);
+    return await this.roomRepository.updateSeat(id, data);
   }
 }

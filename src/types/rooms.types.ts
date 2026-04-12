@@ -34,34 +34,28 @@ export type GetRoomsFilters = {
 
 export interface RoomRepository {
   getRooms(filters?: GetRoomsFilters): Promise<ServiceResult<Room[]>>;
-  getRoomById(roomId: number): Promise<ServiceResult<Room>>;
+  getRoomById(id: number): Promise<ServiceResult<Room>>;
   createRoom(name: string): Promise<ServiceResult<Room>>;
-  deleteRoom(roomId: number): Promise<ServiceResult<null>>;
-  updateRoom(roomId: number, name: string): Promise<ServiceResult<Room>>;
+  deleteRoom(id: number): Promise<ServiceResult<null>>;
+  updateRoom(id: number, name: string): Promise<ServiceResult<Room>>;
   getSeats(filters?: GetSeatsFilters): Promise<ServiceResult<Seat[]>>;
-  getSeatById(seatId: number): Promise<ServiceResult<Seat>>;
+  getSeatById(id: number): Promise<ServiceResult<Seat>>;
   createSeat(data: CreateSeatData): Promise<ServiceResult<Seat>>;
-  deleteSeat(seatId: number): Promise<ServiceResult<null>>;
-  updateSeat(
-    seatId: number,
-    data: UpdateSeatData,
-  ): Promise<ServiceResult<Seat>>;
+  deleteSeat(id: number): Promise<ServiceResult<null>>;
+  updateSeat(id: number, data: UpdateSeatData): Promise<ServiceResult<Seat>>;
 }
 
 export interface RoomService {
   getRooms(filters?: GetRoomsFilters): Promise<ServiceResult<Room[]>>;
-  getRoomById(roomId: number): Promise<ServiceResult<Room>>;
+  getRoomById(id: number): Promise<ServiceResult<Room>>;
   createRoom(name: string): Promise<ServiceResult<Room>>;
-  deleteRoom(roomId: number): Promise<ServiceResult<null>>;
-  updateRoom(roomId: number, name: string): Promise<ServiceResult<Room>>;
+  deleteRoom(id: number): Promise<ServiceResult<null>>;
+  updateRoom(id: number, name: string): Promise<ServiceResult<Room>>;
   getSeats(filters?: GetSeatsFilters): Promise<ServiceResult<Seat[]>>;
-  getSeatById(seatId: number): Promise<ServiceResult<Seat>>;
+  getSeatById(id: number): Promise<ServiceResult<Seat>>;
   createSeat(data: CreateSeatData): Promise<ServiceResult<Seat>>;
-  deleteSeat(seatId: number): Promise<ServiceResult<null>>;
-  updateSeat(
-    seatId: number,
-    data: UpdateSeatData,
-  ): Promise<ServiceResult<Seat>>;
+  deleteSeat(id: number): Promise<ServiceResult<null>>;
+  updateSeat(id: number, data: UpdateSeatData): Promise<ServiceResult<Seat>>;
 }
 
 export interface RoomController {

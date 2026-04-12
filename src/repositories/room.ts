@@ -35,13 +35,10 @@ export class MySQLRoomRepository implements RoomRepository {
     return { ok: true, data: rows.map(this.mapRoomRowToRoom) };
   }
 
-  async getRoomById(roomId: number): Promise<ServiceResult<Room>> {
+  async getRoomById(id: number): Promise<ServiceResult<Room>> {
     const query = this.getRoomsQuery();
     const sql = query.sql + " WHERE r.id = ?";
-    const [rows] = await this.pool.query<RoomRow[]>(sql, [
-      ...query.values,
-      roomId,
-    ]);
+    const [rows] = await this.pool.query<RoomRow[]>(sql, [...query.values, id]);
     if (rows.length === 0) {
       return { ok: false, error: "Room not found" };
     }
@@ -52,19 +49,19 @@ export class MySQLRoomRepository implements RoomRepository {
     const sql = `INSERT INTO rooms (room) VALUES (?)`;
     const [result] = await this.pool.execute(sql, [name]);
     const insertId = (result as any).insertId;
-    return this.getRoomById(insertId);
+    return await this.getRoomById(insertId);
   }
 
-  async deleteRoom(roomId: number): Promise<ServiceResult<null>> {
+  async deleteRoom(id: number): Promise<ServiceResult<null>> {
     const sql = `DELETE FROM rooms WHERE id = ?`;
-    await this.pool.execute(sql, [roomId]);
+    await this.pool.execute(sql, [id]);
     return { ok: true, data: null };
   }
 
-  async updateRoom(roomId: number, name: string): Promise<ServiceResult<Room>> {
+  async updateRoom(id: number, name: string): Promise<ServiceResult<Room>> {
     const sql = `UPDATE rooms SET room = ? WHERE id = ?`;
-    await this.pool.execute(sql, [name, roomId]);
-    return this.getRoomById(roomId);
+    await this.pool.execute(sql, [name, id]);
+    return this.getRoomById(id);
   }
 
   async getSeats(filters?: GetSeatsFilters): Promise<ServiceResult<Seat[]>> {
@@ -73,9 +70,9 @@ export class MySQLRoomRepository implements RoomRepository {
     return { ok: true, data: rows.map(this.mapSeatRowToSeat) };
   }
 
-  async getSeatById(seatId: number): Promise<ServiceResult<Seat>> {
-    const query = this.getSeatsQuery({ filterByRoomId: seatId });
-    const [rows] = await this.pool.query<SeatRow[]>(query.sql, query.values);
+  async getSeatById(id: number): Promise<ServiceResult<Seat>> {
+    const sql = this.getSeatsQuery().sql + " WHERE id = ? ";
+    const [rows] = await this.pool.query<SeatRow[]>(sql, id);
     if (rows.length === 0) {
       return { ok: false, error: "Seat not found" };
     }
@@ -83,33 +80,33 @@ export class MySQLRoomRepository implements RoomRepository {
   }
 
   async createSeat(data: CreateSeatData): Promise<ServiceResult<Seat>> {
-    const sql = `INSERT INTO seats (roomId, row, column) VALUES (?, ?, ?)`;
+    const sql = `INSERT INTO seats (room_id, current_row, number) VALUES (?, ?, ?)`;
     const [result] = await this.pool.execute(sql, [
       data.roomId,
       data.row,
       data.column,
     ]);
     const insertId = (result as any).insertId;
-    return this.getSeatById(insertId);
+    return await this.getSeatById(insertId);
   }
 
-  async deleteSeat(seatId: number): Promise<ServiceResult<null>> {
+  async deleteSeat(id: number): Promise<ServiceResult<null>> {
     const sql = `DELETE FROM seats WHERE id = ?`;
-    await this.pool.execute(sql, [seatId]);
+    await this.pool.execute(sql, [id]);
     return { ok: true, data: null };
   }
 
   async updateSeat(
-    seatId: number,
+    id: number,
     data: UpdateSeatData,
   ): Promise<ServiceResult<Seat>> {
-    const query = this.updateSeatQuery(seatId, data);
+    const query = this.updateSeatQuery(id, data);
     if (!query.ok) {
       return { ok: false, error: query.error };
     }
     const { sql, values } = query.data;
-    await this.pool.query(sql + " WHERE id = ?", [...values, seatId]);
-    return this.getSeatById(seatId);
+    await this.pool.query(sql, [...values, id]);
+    return this.getSeatById(id);
   }
 
   private mapRoomRowToRoom(row: RoomRow): Room {
@@ -135,7 +132,7 @@ export class MySQLRoomRepository implements RoomRepository {
       const sql = `
       SELECT
         r.id,
-        r.rooms AS name,
+        r.room AS name,
         CASE
           WHEN COUNT(s.id) = 0 THEN JSON_ARRAY()
           ELSE JSON_ARRAYAGG(
@@ -156,7 +153,7 @@ export class MySQLRoomRepository implements RoomRepository {
     const sql = `
     SELECT
       r.id,
-      r.rooms AS name
+      r.room AS name
     FROM rooms r
   `;
 
@@ -164,12 +161,12 @@ export class MySQLRoomRepository implements RoomRepository {
   }
 
   private getSeatsQuery(filters?: GetSeatsFilters) {
-    let sql = `SELECT id, roomId, row, column FROM seats`;
+    let sql = `SELECT id, room_id AS roomId, current_row AS 'row', number AS 'column' FROM seats `;
     const values: unknown[] = [];
     const conditions: string[] = [];
 
     if (filters?.filterByRoomId) {
-      conditions.push("roomId = ?");
+      conditions.push("room_id = ?");
       values.push(filters.filterByRoomId);
     }
 
@@ -181,31 +178,34 @@ export class MySQLRoomRepository implements RoomRepository {
   }
 
   private updateSeatQuery(
-    seatId: number,
+    id: number,
     data: UpdateSeatData,
   ): ServiceResult<{ sql: string; values: unknown[] }> {
-    const sql = `UPDATE seats SET `;
     const fields: string[] = [];
     const values: unknown[] = [];
 
     if (data.roomId !== undefined) {
-      fields.push("roomId = ?");
+      fields.push("room_id = ?");
       values.push(data.roomId);
     }
 
     if (data.row !== undefined) {
-      fields.push("row = ?");
+      fields.push("current_row = ?");
       values.push(data.row);
     }
 
     if (data.column !== undefined) {
-      fields.push("column = ?");
+      fields.push("number = ?");
       values.push(data.column);
     }
 
-    if (fields.length === 0) {
+    if (fields.length === 0 || !id) {
       return { ok: false, error: "No fields to update" };
     }
+
+    values.push(id);
+
+    const sql = "UPDATE seats SET " + fields.join(", ") + " WHERE id = ?";
 
     return { ok: true, data: { sql, values } };
   }

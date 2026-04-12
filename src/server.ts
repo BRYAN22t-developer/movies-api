@@ -6,6 +6,7 @@ import type { AuthController, Authenticator } from "./types/auth.types.js";
 import type { MoviesController } from "./types/movies.types.js";
 import type { ScheduleController } from "./types/schedule.types.js";
 import type { ReservationController } from "./types/reservation.types.js";
+import type { RoomController } from "./types/rooms.types.js";
 
 export function createServer({
   authenticator,
@@ -13,12 +14,14 @@ export function createServer({
   moviesController,
   scheduleController,
   reservationController,
+  roomController,
 }: {
   authenticator: Authenticator;
   authController: AuthController;
   moviesController: MoviesController;
   scheduleController: ScheduleController;
   reservationController: ReservationController;
+  roomController: RoomController;
 }): Express {
   const app = express();
   app.disable("x-powered-by");
@@ -33,6 +36,7 @@ export function createServer({
       moviesController,
       scheduleController,
       reservationController,
+      roomController,
     }),
   );
 
