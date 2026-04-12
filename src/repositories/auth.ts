@@ -1,5 +1,4 @@
 import type { Pool, RowDataPacket } from "mysql2/promise";
-import mysql from "mysql2/promise";
 import type {
   AuthRepository,
   PermissionIsAllowedData,
@@ -10,10 +9,8 @@ import type {
 export class MySQLAuthRepository implements AuthRepository {
   private readonly pool: Pool;
 
-  constructor() {
-    const DATABASE_URL = process.env.DATABASE_URL;
-    if (!DATABASE_URL) throw new Error("DATABASE_URL is not defined");
-    this.pool = mysql.createPool(DATABASE_URL);
+  constructor(pool: Pool) {
+    this.pool = pool;
   }
 
   async createUser(data: {

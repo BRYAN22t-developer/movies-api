@@ -6,7 +6,7 @@ import type {
   ServiceResult,
   UpdateMovieData,
 } from "../types/movies.types.js";
-import mysql, { type Pool, type RowDataPacket } from "mysql2/promise";
+import type { Pool, RowDataPacket, ResultSetHeader } from "mysql2/promise";
 
 type MovieRow = RowDataPacket & {
   id: number;
@@ -20,10 +20,8 @@ type MovieRow = RowDataPacket & {
 export class MySQLMoviesRepository implements MoviesRepository {
   private readonly pool: Pool;
 
-  constructor() {
-    const DATABASE_URL = process.env.DATABASE_URL;
-    if (!DATABASE_URL) throw new Error("DATABASE_URL is not defined");
-    this.pool = mysql.createPool(DATABASE_URL);
+  constructor(pool: Pool) {
+    this.pool = pool;
   }
 
   async getMovies(
@@ -51,10 +49,7 @@ export class MySQLMoviesRepository implements MoviesRepository {
       await connection.beginTransaction();
 
       const { query, params } = this.createMovieQuery(data);
-      const [result] = await connection.query<mysql.ResultSetHeader>(
-        query,
-        params,
-      );
+      const [result] = await connection.query<ResultSetHeader>(query, params);
       const movieId = result.insertId;
 
       const { query: genresQuery, params: genresParams } =

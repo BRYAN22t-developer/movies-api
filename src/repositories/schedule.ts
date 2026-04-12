@@ -1,4 +1,3 @@
-import mysql from "mysql2/promise";
 import type { Pool, RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import type {
   createScheduleData,
@@ -18,12 +17,12 @@ type ScheduleRow = RowDataPacket & {
 };
 
 export class MySQLScheduleRepository implements ScheduleRepository {
-  private pool: Pool;
-  constructor() {
-    const DATABASE_URL = process.env.DATABASE_URL;
-    if (!DATABASE_URL) throw new Error("DATABASE_URL is not defined");
-    this.pool = mysql.createPool(DATABASE_URL);
+  private readonly pool: Pool;
+
+  constructor(pool: Pool) {
+    this.pool = pool;
   }
+
   async getScheduleStates(): Promise<
     ServiceResult<{ id: number; state: string }[]>
   > {
@@ -35,6 +34,7 @@ export class MySQLScheduleRepository implements ScheduleRepository {
     }));
     return { ok: true, data: states };
   }
+
   async createScheduleState(
     state: string,
   ): Promise<ServiceResult<{ id: number; state: string }>> {
@@ -46,6 +46,7 @@ export class MySQLScheduleRepository implements ScheduleRepository {
       data: { id: insertId, state },
     };
   }
+
   async deleteScheduleState(id: number): Promise<ServiceResult<null>> {
     const sql = `DELETE FROM schedules_states WHERE id = ?`;
     const [result] = await this.pool.query(sql, [id]);
@@ -54,6 +55,7 @@ export class MySQLScheduleRepository implements ScheduleRepository {
     }
     return { ok: true, data: null };
   }
+
   async updateScheduleState(
     id: number,
     state: string,

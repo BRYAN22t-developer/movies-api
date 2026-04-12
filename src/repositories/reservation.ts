@@ -1,4 +1,3 @@
-import mysql from "mysql2/promise";
 import type { Pool, RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import type {
   CreateReservationData,
@@ -25,11 +24,10 @@ type StateRow = RowDataPacket & {
 };
 
 export class MySQLReservationRepository implements ReservationRepository {
-  private pool: Pool;
-  constructor() {
-    const DATABASE_URL = process.env.DATABASE_URL;
-    if (!DATABASE_URL) throw new Error("DATABASE_URL is not defined");
-    this.pool = mysql.createPool(DATABASE_URL);
+  private readonly pool: Pool;
+
+  constructor(pool: Pool) {
+    this.pool = pool;
   }
 
   async getReservations(

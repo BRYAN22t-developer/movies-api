@@ -1,4 +1,4 @@
-import type { Pool, RowDataPacket } from "mysql2/promise";
+import type { Pool, RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import type {
   CreateGenreData,
   Genre,
@@ -6,7 +6,6 @@ import type {
   ServiceResult,
   UpdateGenreData,
 } from "../types/movies.types.js";
-import mysql from "mysql2/promise";
 
 type GenreRow = RowDataPacket & {
   id: number;
@@ -19,21 +18,20 @@ type GenreRow = RowDataPacket & {
 
 export class MySQLGenresRepository implements GenresRepository {
   private readonly pool: Pool;
-  constructor() {
-    const DATABASE_URL = process.env.DATABASE_URL;
-    if (!DATABASE_URL) throw new Error("DATABASE_URL is not defined");
-    this.pool = mysql.createPool(DATABASE_URL);
+
+  constructor(pool: Pool) {
+    this.pool = pool;
   }
+
   async getGenres(): Promise<ServiceResult<Genre[]>> {
     const query = "SELECT id, genre FROM genres";
     const [rows] = await this.pool.query<GenreRow[]>(query);
     return { ok: true, data: this.parseGenres(rows) };
   }
+
   async create(data: CreateGenreData): Promise<ServiceResult<Genre>> {
     const query = "INSERT INTO genres (genre) VALUES (?)";
-    const [result] = await this.pool.query<mysql.ResultSetHeader>(query, [
-      data.name,
-    ]);
+    const [result] = await this.pool.query<ResultSetHeader>(query, [data.name]);
     const genreId = result.insertId;
     const [rows] = await this.pool.query<GenreRow[]>(
       `SELECT id, genre FROM genres WHERE id = ?`,
@@ -52,18 +50,21 @@ export class MySQLGenresRepository implements GenresRepository {
 
     return { ok: true, data: genre };
   }
+
   async findById(id: number): Promise<ServiceResult<Genre | null>> {
     const query = "SELECT id, genre FROM genres WHERE id = ?";
     const [rows] = await this.pool.query<GenreRow[]>(query, [id]);
     const genre = this.parseGenres(rows)[0] ?? null;
     return { ok: true, data: genre };
   }
+
   async findByIds(ids: number[]): Promise<ServiceResult<Genre[] | null>> {
     const placeholders = ids.map(() => "?").join(", ");
     const query = `SELECT id, genre FROM genres WHERE id IN (${placeholders})`;
     const [rows] = await this.pool.query<GenreRow[]>(query, ids);
     return { ok: true, data: this.parseGenres(rows) };
   }
+
   async findByName(name: string): Promise<ServiceResult<Genre | null>> {
     const query = "SELECT id, genre FROM genres WHERE genre = ?";
     const [rows] = await this.pool.query<GenreRow[]>(query, [name]);
@@ -83,6 +84,7 @@ export class MySQLGenresRepository implements GenresRepository {
     const [result] = await this.pool.query(query, [id]);
     return { ok: true, data: null };
   }
+
   async updateById(
     id: number,
     data: UpdateGenreData,

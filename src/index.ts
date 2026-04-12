@@ -1,12 +1,11 @@
-import dotenv from "dotenv";
-dotenv.config();
+import dotenv from "dotenv/config";
+import { env } from "./config/env.js";
 
 import { createServer } from "./server.js";
 import { MySQLAuthRepository } from "./repositories/auth.js";
 import { DefaultAuthService } from "./services/auth.js";
 import { HttpAuthController } from "./controllers/auth.js";
 import { Auth as Authenticator } from "./middlewares/auth.js";
-import { MySQLModel } from "./models/mysql/main.js";
 import { UNAUTHENTICATED_ENDPOINTS } from "./constants/unauthenticated-endpoints.js";
 import { DefaultMoviesController } from "./controllers/movies.js";
 import { DefaultMoviesService } from "./services/movies.js";
@@ -21,17 +20,20 @@ import { ScheduleSchema } from "./schemas/schedule.js";
 import { MySQLReservationRepository } from "./repositories/reservation.js";
 import { DefaultReservationController } from "./controllers/reservation.js";
 import { DefaultReservationService } from "./services/reservation.js";
+import { getPool } from "./db/mysql.js";
 
 //#region Dependency Injection
 
-const authRepository = new MySQLAuthRepository();
+const pool = getPool();
+
+const authRepository = new MySQLAuthRepository(pool);
 const authService = new DefaultAuthService(authRepository);
 const authController = new HttpAuthController(authService);
 const authenticator = new Authenticator(authService, UNAUTHENTICATED_ENDPOINTS);
 
-const genresRepository = new MySQLGenresRepository();
+const genresRepository = new MySQLGenresRepository(pool);
 const genresService = new DefaultGenresService(genresRepository);
-const moviesRepository = new MySQLMoviesRepository();
+const moviesRepository = new MySQLMoviesRepository(pool);
 const moviesService = new DefaultMoviesService(moviesRepository);
 const movieSchema = new MovieSchema();
 const moviesController = new DefaultMoviesController({
@@ -41,7 +43,7 @@ const moviesController = new DefaultMoviesController({
 });
 
 const scheduleSchema = new ScheduleSchema();
-const scheduleRepository = new MySQLScheduleRepository();
+const scheduleRepository = new MySQLScheduleRepository(pool);
 const scheduleService = new DefaultScheduleService(scheduleRepository);
 const scheduleController = new DefaultScheduleController(
   scheduleService,
@@ -49,7 +51,7 @@ const scheduleController = new DefaultScheduleController(
   moviesService,
 );
 
-const reservationRepository = new MySQLReservationRepository();
+const reservationRepository = new MySQLReservationRepository(pool);
 const reservationService = new DefaultReservationService(reservationRepository);
 const reservationController = new DefaultReservationController(
   reservationService,
@@ -57,7 +59,7 @@ const reservationController = new DefaultReservationController(
 
 //#endregion
 
-const port = Number(process.env.PORT) || 3000;
+const port = env.PORT;
 
 createServer({
   authenticator,
