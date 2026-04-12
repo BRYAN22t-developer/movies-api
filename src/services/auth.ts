@@ -1,3 +1,4 @@
+import { env } from "../config/env.js";
 import type {
   AuthRepository,
   AuthService,
@@ -28,8 +29,7 @@ export class DefaultAuthService implements AuthService {
   async register(data: RegisterData): Promise<ServiceResult<{ id: number }>> {
     const { username, password } = data;
 
-    const SALT_ROUNDS = Number(process.env.SALT_ROUNDS);
-    if (!SALT_ROUNDS) throw new Error("SALT_ROUNDS is not defined");
+    const SALT_ROUNDS = env.SALT_ROUNDS;
     const criptedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     const result = await this.authRepository.createUser({

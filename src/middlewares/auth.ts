@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import type { Authenticator, AuthService } from "../types/auth.types.js";
+import { env } from "../config/env.js";
 
 export class Auth implements Authenticator {
   private readonly unAuthenticatedEndPoints: String[];
@@ -19,8 +20,7 @@ export class Auth implements Authenticator {
     if (!authToken) return res.json({ Error: "Missing auth token" });
 
     try {
-      const JWT_SECRET = process.env.JWT_SECRET;
-      if (!JWT_SECRET) throw new Error("SECRET_KEY is not defined");
+      const JWT_SECRET = env.JWT_SECRET;
 
       const payload = jwt.verify(authToken, JWT_SECRET) as Express.UserPayload;
       req.user = payload;
@@ -43,8 +43,7 @@ export class Auth implements Authenticator {
     const authToken = req.cookies?.authToken;
     if (!authToken) return res.json({ Error: "Missing auth token" });
     try {
-      const JWT_SECRET = process.env.JWT_SECRET;
-      if (!JWT_SECRET) throw new Error("SECRET_KEY is not defined");
+      const JWT_SECRET = env.JWT_SECRET;
 
       const payload = jwt.verify(authToken, JWT_SECRET) as Express.UserPayload;
       req.user = payload;

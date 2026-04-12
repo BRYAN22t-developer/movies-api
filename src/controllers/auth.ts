@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import Jwt from "jsonwebtoken";
 import type { AuthController, AuthService } from "../types/auth.types.js";
+import { env } from "../config/env.js";
 
 export class HttpAuthController implements AuthController {
   private readonly authService: AuthService;
@@ -29,14 +30,12 @@ export class HttpAuthController implements AuthController {
       return res.status(401).json(result);
     }
 
-    if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined");
-
     const authToken = Jwt.sign(
       {
         id: result.data.id,
         username,
       },
-      process.env.JWT_SECRET,
+      env.JWT_SECRET,
       {
         expiresIn: "24h",
       },
