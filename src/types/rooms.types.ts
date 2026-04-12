@@ -49,7 +49,7 @@ export interface RoomRepository {
 }
 
 export interface RoomService {
-  getRooms(): Promise<ServiceResult<Room[]>>;
+  getRooms(filters?: GetRoomsFilters): Promise<ServiceResult<Room[]>>;
   getRoomById(roomId: number): Promise<ServiceResult<Room>>;
   createRoom(name: string): Promise<ServiceResult<Room>>;
   deleteRoom(roomId: number): Promise<ServiceResult<null>>;
