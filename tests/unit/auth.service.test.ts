@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import bcrypt from "bcrypt";
 
 vi.mock("../../src/config/env.js", () => ({
   env: {
@@ -17,6 +18,7 @@ import type {
   AuthRepository,
   AuthService,
 } from "../../src/types/auth.types.js";
+import { env } from "@/config/env.js";
 
 const { DefaultAuthService } = await import("../../src/services/auth.js");
 
@@ -52,6 +54,59 @@ describe("DefaultAuthService", () => {
 
     if (result.ok) {
       expect(result.data?.id).toBe(1);
+    }
+  });
+
+  const userLoginData = {
+    id: 1,
+    username: "admin",
+    password: bcrypt.hashSync("1234", env.SALT_ROUNDS),
+  };
+
+  it("should return login data when credentials are correct", async () => {
+    vi.mocked(authRepository.findUserByUsername).mockResolvedValue(
+      userLoginData,
+    );
+
+    const result = await service.login({ username: "admin", password: "1234" });
+
+    expect(result.ok).toBe(true);
+
+    if (result.ok) {
+      expect(result.data.message).toBe("login successfully");
+      expect(result.data.id).toBe(1);
+    }
+  });
+
+  it("should return message when username does not exist", async () => {
+    vi.mocked(authRepository.findUserByUsername).mockResolvedValue(null);
+
+    const result = await service.login({
+      username: "worng_username",
+      password: "1234",
+    });
+
+    expect(result.ok).toBe(false);
+
+    if (!result.ok) {
+      expect(result.error).toBe("user does not exist");
+    }
+  });
+
+  it("should return message when password is incorrect", async () => {
+    vi.mocked(authRepository.findUserByUsername).mockResolvedValue(
+      userLoginData,
+    );
+
+    const result = await service.login({
+      username: "admin",
+      password: "wrong_password",
+    });
+
+    expect(result.ok).toBe(false);
+
+    if (!result.ok) {
+      expect(result.error).toBe("wrong password");
     }
   });
 });
