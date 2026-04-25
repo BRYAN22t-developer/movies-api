@@ -6,7 +6,7 @@ import type {
   PermissionIsAllowedData,
   RegisterData,
   ServiceResult,
-} from "../types/auth.types.js";
+} from "@/types/auth.types.js";
 import bcrypt from "bcrypt";
 
 export class DefaultAuthService implements AuthService {
