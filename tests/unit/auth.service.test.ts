@@ -125,4 +125,26 @@ describe("DefaultAuthService", () => {
 
     expect(result).toBe(null);
   });
+
+  it("should return true if user permission is allowed", async () => {
+    vi.mocked(authRepository.permissionIsAllowed).mockResolvedValue(true);
+
+    const result = await service.permissionIsAllowed({
+      userId: 1,
+      permission: "read:movies",
+    });
+
+    expect(result).toBe(true);
+  });
+
+  it("should return false if user permission is not allowed", async () => {
+    vi.mocked(authRepository.permissionIsAllowed).mockResolvedValue(false);
+
+    const result = await service.permissionIsAllowed({
+      userId: 1,
+      permission: "read:movies",
+    });
+
+    expect(result).toBe(false);
+  });
 });
