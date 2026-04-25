@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import bcrypt from "bcrypt";
 
-vi.mock("../../src/config/env.js", () => ({
+vi.mock("@/config/env.js", () => ({
   env: {
     PORT: 3000,
     DB_HOST: "localhost",
@@ -20,7 +20,7 @@ import type {
 } from "../../src/types/auth.types.js";
 import { env } from "@/config/env.js";
 
-const { DefaultAuthService } = await import("../../src/services/auth.js");
+const { DefaultAuthService } = await import("@/services/auth.js");
 
 describe("DefaultAuthService", () => {
   let authRepository: AuthRepository;
@@ -108,5 +108,21 @@ describe("DefaultAuthService", () => {
     if (!result.ok) {
       expect(result.error).toBe("wrong password");
     }
+  });
+
+  it("should return id role if role exist", async () => {
+    vi.mocked(authRepository.getRoleIdByName).mockResolvedValue(1);
+
+    const result = await service.getRoleIdByName("admin");
+
+    expect(result).toBe(1);
+  });
+
+  it("should return null if role does not exist", async () => {
+    vi.mocked(authRepository.getRoleIdByName).mockResolvedValue(null);
+
+    const result = await service.getRoleIdByName("wrong_role");
+
+    expect(result).toBe(null);
   });
 });
