@@ -8,6 +8,7 @@ import type { ScheduleController } from "./types/schedule.types.js";
 import type { ReservationController } from "./types/reservation.types.js";
 import type { RoomController } from "./types/rooms.types.js";
 import { defaultRateLimit } from "./middlewares/rate-limit.js";
+import cors from "cors";
 
 export function createServer({
   authenticator,
@@ -30,6 +31,7 @@ export function createServer({
   app.use(defaultRateLimit());
   app.use(cookieParser());
   app.use(express.json());
+  app.use(cors());
 
   app.use(
     createMainRouter({
