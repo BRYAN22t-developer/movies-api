@@ -7,6 +7,7 @@ import type { MoviesController } from "./types/movies.types.js";
 import type { ScheduleController } from "./types/schedule.types.js";
 import type { ReservationController } from "./types/reservation.types.js";
 import type { RoomController } from "./types/rooms.types.js";
+import { defaultRateLimit } from "./middlewares/rate-limit.js";
 
 export function createServer({
   authenticator,
@@ -26,6 +27,7 @@ export function createServer({
   const app = express();
   app.disable("x-powered-by");
 
+  app.use(defaultRateLimit());
   app.use(cookieParser());
   app.use(express.json());
 
