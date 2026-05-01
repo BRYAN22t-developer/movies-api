@@ -28,10 +28,10 @@ export function createServer({
   const app = express();
   app.disable("x-powered-by");
 
+  app.use(cors());
   app.use(defaultRateLimit());
   app.use(cookieParser());
   app.use(express.json());
-  app.use(cors());
 
   app.use(
     createMainRouter({
