@@ -80,6 +80,9 @@ export class DefaultReservationController implements ReservationController {
     if (serviceResult.ok) {
       return res.status(201).json(serviceResult.data);
     } else {
+      if (serviceResult.error === "Seat already reserved") {
+        return res.status(409).json({ error: serviceResult.error });
+      }
       return res.status(400).json({ error: serviceResult.error });
     }
   }

@@ -54,16 +54,22 @@ export class MySQLReservationRepository implements ReservationRepository {
   async createReservation(
     data: CreateReservationData,
   ): Promise<ServiceResult<Reservation>> {
-    console.log("Creating reservation with data:", data);
-    const sql = `INSERT INTO reservations (schedule_id, user_id, seat_id, state_id) VALUES (?, ?, ?, ?)`;
-    const [result] = await this.pool.execute(sql, [
-      data.scheduleId,
-      data.userId,
-      data.seatId,
-      data.stateId,
-    ]);
-    const insertId = (result as ResultSetHeader).insertId;
-    return await this.getReservationById(insertId);
+    try {
+      const sql = `INSERT INTO reservations (schedule_id, user_id, seat_id, state_id) VALUES (?, ?, ?, ?)`;
+      const [result] = await this.pool.execute(sql, [
+        data.scheduleId,
+        data.userId,
+        data.seatId,
+        data.stateId,
+      ]);
+      const insertId = (result as ResultSetHeader).insertId;
+      return await this.getReservationById(insertId);
+    } catch (error) {
+      if (isDuplicateEntryError(error)) {
+        return { ok: false, error: "SEAT_ALREADY_RESERVED" };
+      }
+      throw error;
+    }
   }
 
   async updateReservation(
@@ -249,4 +255,13 @@ export class MySQLReservationRepository implements ReservationRepository {
 
     return { sql, values };
   }
+}
+
+function isDuplicateEntryError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "ER_DUP_ENTRY"
+  );
 }

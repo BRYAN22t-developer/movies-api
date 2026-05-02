@@ -32,7 +32,20 @@ export class DefaultReservationService implements ReservationService {
   async createReservation(
     data: CreateReservationData,
   ): Promise<ServiceResult<Reservation>> {
-    return await this.repository.createReservation(data);
+    const result = await this.repository.createReservation(data);
+
+    if (!result.ok) {
+      if (result.error === "SEAT_ALREADY_RESERVED") {
+        return {
+          ok: false,
+          error: "Seat already reserved",
+        };
+      }
+
+      return result;
+    }
+
+    return result;
   }
 
   async updateReservation(

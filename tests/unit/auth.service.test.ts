@@ -10,10 +10,7 @@ vi.mock("bcrypt", () => ({
   },
 }));
 
-import type {
-  AuthRepository,
-  AuthService,
-} from "../../src/types/auth.types.js";
+import type { AuthRepository, AuthService } from "@/types/auth.types.js";
 import { env } from "@/config/env.js";
 
 const { DefaultAuthService } = await import("@/services/auth.js");

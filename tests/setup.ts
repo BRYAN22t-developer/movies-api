@@ -5,7 +5,7 @@ vi.mock("@/config/env.js", () => ({
     PORT: 3000,
     DB_HOST: "localhost",
     DB_PORT: 3306,
-    DB_NAME: "movies_test",
+    DB_NAME: "movies",
     DB_USER: "root",
     DB_PASSWORD: "",
     JWT_SECRET: "test_secret",
