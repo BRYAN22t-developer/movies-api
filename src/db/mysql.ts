@@ -1,10 +1,13 @@
 import mysql, { type Pool } from "mysql2/promise";
 import { env } from "../config/env.js";
+import { get } from "http";
 
 let pool: Pool | null = null;
 
 export function getPool(): Pool {
   if (pool) return pool;
+
+  console.log(env.DB_NAME);
 
   pool = mysql.createPool({
     host: env.DB_HOST,

@@ -32,9 +32,17 @@ export interface AuthRepository {
     password: string;
   }): Promise<ServiceResult<{ id: number }>>;
   findUserByUsername(username: string): Promise<UserAuthRecord | null>;
+  getUserById(id: number): Promise<UserAuthRecord | null>;
   assignRoleToUser(userId: number, roleId: number): Promise<void>;
   getRoleIdByName(name: string): Promise<number | null>;
   permissionIsAllowed(data: PermissionIsAllowedData): Promise<boolean>;
+  deleteUserById(userId: number): Promise<void>;
+  updateUserPassword(userId: number, newPassword: string): Promise<void>;
+  updateUser(
+    id: number,
+    data: { username?: string; password?: string },
+  ): Promise<void>;
+  getusersWithRole(roleName: string): Promise<UserAuthRecord[]>;
 }
 
 export interface AuthService {
@@ -42,13 +50,26 @@ export interface AuthService {
   login(
     data: LoginData,
   ): Promise<ServiceResult<{ id: number; message: string }>>;
+  getUserById(id: number): Promise<UserAuthRecord | null>;
   getRoleIdByName(name: string): Promise<number | null>;
   permissionIsAllowed(data: PermissionIsAllowedData): Promise<boolean>;
+  deleteUserById(userId: number): Promise<void>;
+  updateUserPassword(userId: number, newPassword: string): Promise<void>;
+  updateUser(
+    id: number,
+    data: { username?: string; password?: string },
+  ): Promise<void>;
+  getusersWithRole(roleName: string): Promise<UserAuthRecord[]>;
 }
 
 export interface AuthController {
   register(req: Request, res: Response): Promise<Response | void>;
   login(req: Request, res: Response): Promise<Response | void>;
+  getUser(req: Request, res: Response): Promise<Response | void>;
+  deleteUser(req: Request, res: Response): Promise<Response | void>;
+  updatePassword(req: Request, res: Response): Promise<Response | void>;
+  updateUser(req: Request, res: Response): Promise<Response | void>;
+  getUsersWithRole(req: Request, res: Response): Promise<Response | void>;
 }
 
 export interface Authenticator {

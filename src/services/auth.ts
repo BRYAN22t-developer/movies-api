@@ -6,6 +6,7 @@ import type {
   PermissionIsAllowedData,
   RegisterData,
   ServiceResult,
+  UserAuthRecord,
 } from "@/types/auth.types.js";
 import bcrypt from "bcrypt";
 
@@ -51,5 +52,36 @@ export class DefaultAuthService implements AuthService {
     if (!passwordMatches) return { ok: false, error: "wrong password" };
 
     return { ok: true, data: { id: result.id, message: "login successfully" } };
+  }
+
+  async getUserById(id: number): Promise<UserAuthRecord | null> {
+    return await this.authRepository.getUserById(id);
+  }
+
+  async deleteUserById(userId: number): Promise<void> {
+    await this.authRepository.deleteUserById(userId);
+  }
+
+  async updateUserPassword(userId: number, newPassword: string): Promise<void> {
+    const SALT_ROUNDS = env.SALT_ROUNDS;
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await this.authRepository.updateUserPassword(userId, hashedPassword);
+  }
+
+  async updateUser(
+    id: number,
+    data: { username?: string; password?: string },
+  ): Promise<void> {
+    const updateData: { username?: string; password?: string } = {};
+    if (data.username) updateData.username = data.username;
+    if (data.password) {
+      const SALT_ROUNDS = env.SALT_ROUNDS;
+      updateData.password = await bcrypt.hash(data.password, SALT_ROUNDS);
+    }
+    await this.authRepository.updateUser(id, updateData);
+  }
+
+  async getusersWithRole(roleName: string): Promise<UserAuthRecord[]> {
+    return await this.authRepository.getusersWithRole(roleName);
   }
 }

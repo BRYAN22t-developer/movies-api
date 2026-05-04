@@ -27,9 +27,14 @@ describe("DefaultAuthService", () => {
     authRepository = {
       createUser: vi.fn(),
       findUserByUsername: vi.fn(),
+      getUserById: vi.fn(),
       assignRoleToUser: vi.fn(),
       getRoleIdByName: vi.fn(),
       permissionIsAllowed: vi.fn(),
+      deleteUserById: vi.fn(),
+      updateUserPassword: vi.fn(),
+      updateUser: vi.fn(),
+      getusersWithRole: vi.fn(),
     };
 
     service = new DefaultAuthService(authRepository);

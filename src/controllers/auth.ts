@@ -48,4 +48,54 @@ export class HttpAuthController implements AuthController {
     });
     res.json(result);
   }
+
+  async getUser(req: Request, res: Response) {
+    const { id } = req.params;
+    const userId = parseInt(id as string, 10);
+    if (isNaN(userId))
+      return res.status(400).json({ error: "Invalid user ID" });
+
+    const user = await this.authService.getUserById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({ ok: true, data: user });
+  }
+
+  async deleteUser(req: Request, res: Response) {
+    const { id } = req.params;
+    const userId = parseInt(id as string, 10);
+    if (isNaN(userId))
+      return res.status(400).json({ error: "Invalid user ID" });
+
+    await this.authService.deleteUserById(userId);
+    res.status(204).send();
+  }
+
+  async updatePassword(req: Request, res: Response) {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+    const userId = parseInt(id as string, 10);
+    if (isNaN(userId) || !newPassword)
+      return res.status(400).json({ error: "Invalid data" });
+
+    await this.authService.updateUserPassword(userId, newPassword);
+    res.json({ ok: true, message: "Password updated" });
+  }
+
+  async updateUser(req: Request, res: Response) {
+    const { id } = req.params;
+    const { username, password } = req.body;
+    const userId = parseInt(id as string, 10);
+    if (isNaN(userId))
+      return res.status(400).json({ error: "Invalid user ID" });
+
+    await this.authService.updateUser(userId, { username, password });
+    res.json({ ok: true, message: "User updated" });
+  }
+
+  async getUsersWithRole(req: Request, res: Response) {
+    const { roleName } = req.params;
+    const users = await this.authService.getusersWithRole(roleName as string);
+    res.json({ ok: true, data: users });
+  }
 }

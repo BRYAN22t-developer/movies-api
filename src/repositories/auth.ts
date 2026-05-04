@@ -70,4 +70,56 @@ export class MySQLAuthRepository implements AuthRepository {
 
     return Boolean(rows[0]?.has_permission);
   }
+
+  async deleteUserById(userId: number): Promise<void> {
+    await this.pool.query("DELETE FROM users WHERE id = ?", [userId]);
+  }
+
+  async updateUserPassword(userId: number, newPassword: string): Promise<void> {
+    await this.pool.query("UPDATE users SET password = ? WHERE id = ?", [
+      newPassword,
+      userId,
+    ]);
+  }
+
+  async getUserById(id: number): Promise<UserAuthRecord | null> {
+    const query = "SELECT id, username, password FROM users WHERE id = ?";
+    const [rows] = await this.pool.query<RowDataPacket[]>(query, [id]);
+    if (!rows || rows.length === 0) return null;
+    return rows[0] as UserAuthRecord;
+  }
+
+  async updateUser(
+    id: number,
+    data: { username?: string; password?: string },
+  ): Promise<void> {
+    const { username, password } = data;
+    let query = "UPDATE users SET ";
+    const params: any[] = [];
+    const updates: string[] = [];
+    if (username) {
+      updates.push("username = ?");
+      params.push(username);
+    }
+    if (password) {
+      updates.push("password = ?");
+      params.push(password);
+    }
+    if (updates.length === 0) return;
+    query += updates.join(", ") + " WHERE id = ?";
+    params.push(id);
+    await this.pool.query(query, params);
+  }
+
+  async getusersWithRole(roleName: string): Promise<UserAuthRecord[]> {
+    const query = `
+      SELECT u.id, u.username, u.password
+      FROM users u
+      JOIN users_roles ur ON u.id = ur.user_id
+      JOIN roles r ON ur.role_id = r.id
+      WHERE LOWER(r.role) = LOWER(?)
+    `;
+    const [rows] = await this.pool.query<RowDataPacket[]>(query, [roleName]);
+    return rows as UserAuthRecord[];
+  }
 }
