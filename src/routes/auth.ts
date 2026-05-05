@@ -41,7 +41,7 @@ export function createAuthRouter({
     },
   );
 
-  router.put(
+  router.patch(
     "/users/:id/password",
     (req, res, next) =>
       authenticator.authorization(req, res, next, "users:update"),
@@ -50,7 +50,7 @@ export function createAuthRouter({
     },
   );
 
-  router.put(
+  router.patch(
     "/users/:id",
     (req, res, next) =>
       authenticator.authorization(req, res, next, "users:update"),
